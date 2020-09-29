@@ -28,20 +28,21 @@
   },
   "dependencies": {
     "cheerio": "~0.22.0",
-    "optimist": "~0.6.1",
     "lodash": "~4.17.10",
+    "optimist": "~0.6.1",
     "xregexp": "~2.0.0"
   },
   "devDependencies": {
     "coffee-script-redux": "2.0.0-beta7",
     "commonjs-everywhere": "0.9.x",
-    "mocha": "~1.12.1",
+    "deep-equal": "~0.2.1",
+    "mocha": "^8.1.3",
     "scopedfs": "~0.1.0",
-    "semver": "~4.3.2",
-    "deep-equal": "~0.2.1"
+    "semver": "~4.3.2"
   },
   "scripts": {
-    "test": "make test"
+    "build": "npx rimraf lib && cp -rf src lib",
+    "test": "npx mocha -u tdd -r test-setup.js"
   },
   "licenses": [
     {
