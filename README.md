@@ -2,7 +2,7 @@
 
 An automatic web page content extractor for Node.js!
 
-[![Build Status](https://travis-ci.org/ageitgey/node-unfluff.svg?branch=master)](https://travis-ci.org/ageitgey/node-unfluff)
+[![Build Status](https://travis-ci.org/yknx4/node-unfluff.svg?branch=master)](https://travis-ci.org/yknx4/node-unfluff)
 
 Automatically grab the main
 text out of a webpage like this:

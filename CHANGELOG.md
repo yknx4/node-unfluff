@@ -5,7 +5,7 @@
 * Updated cheerio dependencies
 
 ### 1.0.0
-* Add support for extracting out `softTitle`, `date`, `copyright`, `author`, `publisher` thanks to @philgooch. See [#49](https://github.com/ageitgey/node-unfluff/pull/49).
+* Add support for extracting out `softTitle`, `date`, `copyright`, `author`, `publisher` thanks to @philgooch. See [#49](https://github.com/yknx4/node-unfluff/pull/49).
 
 ### 0.11.0 
 * Add support for pulling the page description out of og:description tags
@@ -30,7 +30,7 @@
 * Added Thai stopwords (Thanks to thangman22)
 
 ### 0.6.0
-* If you specify a language that isn't supported, fall back to english and warn the user (Thanks to mhuebert for [#12](https://github.com/ageitgey/node-unfluff/pull/12))
+* If you specify a language that isn't supported, fall back to english and warn the user (Thanks to mhuebert for [#12](https://github.com/yknx4/node-unfluff/pull/12))
 
 ### 0.5.1
 * Added Turkish stopwords (Thanks to ayhankuru)
@@ -39,16 +39,16 @@
 * Handle pages with code blocks better (like github pages)
 
 ### 0.4.0
-* Fix case where text will get dropped accidentally. See [#9](https://github.com/ageitgey/node-unfluff/pull/9).
+* Fix case where text will get dropped accidentally. See [#9](https://github.com/yknx4/node-unfluff/pull/9).
 
 ### 0.3.0
-* Better handle html with random line breaks. See [#6](https://github.com/ageitgey/node-unfluff/pull/6).
+* Better handle html with random line breaks. See [#6](https://github.com/yknx4/node-unfluff/pull/6).
 
 ### 0.2.0
-* Added ability to extract an image from articles. See [#4](https://github.com/ageitgey/node-unfluff/pull/4).
+* Added ability to extract an image from articles. See [#4](https://github.com/yknx4/node-unfluff/pull/4).
 
 ### 0.1.0
-* Added ability to extract embedded videos from articles. See [#2](https://github.com/ageitgey/node-unfluff/pull/2).
+* Added ability to extract embedded videos from articles. See [#2](https://github.com/yknx4/node-unfluff/pull/2).
 
 ### 0.0.2
 * Intial public release

@@ -1,8 +1,8 @@
 {
-  "name": "unfluff",
-  "version": "3.2.0",
+  "name": "unfluffjs",
+  "version": "3.3.0",
   "description": "A web page content extractor",
-  "homepage": "https://github.com/ageitgey/node-unfluff",
+  "homepage": "https://github.com/yknx4/node-unfluff",
   "keywords": [
     "content extraction",
     "html",
@@ -11,15 +11,21 @@
     "web page",
     "body text"
   ],
-  "author": {
-    "name": "Adam Geitgey",
-    "email": "ageitgey@gmail.com"
-  },
+  "authors": [
+    {
+      "name": "Adam Geitgey",
+      "email": "ageitgey@gmail.com"
+    },
+    {
+      "name": "Ale Ornelas",
+      "email": "me@ale.world"
+    }
+  ],
   "repository": {
     "type": "git",
-    "url": "git://github.com/ageitgey/node-unfluff"
+    "url": "git://github.com/yknx4/node-unfluff"
   },
-  "bugs": "https://github.com/ageitgey/node-unfluff/issues",
+  "bugs": "https://github.com/yknx4/node-unfluff/issues",
   "main": "lib/unfluff.js",
   "directories": {
     "bin": "bin",
@@ -47,7 +53,7 @@
   "licenses": [
     {
       "type": "Apache",
-      "url": "https://github.com/ageitgey/node-unfluff/blob/master/LICENSE"
+      "url": "https://github.com/yknx4/node-unfluff/blob/master/LICENSE"
     }
   ]
 }
