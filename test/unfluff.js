@@ -138,11 +138,11 @@ suite('Unfluff', function() {
 
   test('gets cleaned text - Time', () => checkFixture('time2' , ['cleaned_text']));
 
-  test('gets cleaned text - BI', function() {
-    checkFixture('businessinsider1' , ['cleaned_text']);
-    checkFixture('businessinsider2' , ['cleaned_text']);
-    return checkFixture('businessinsider3' , ['cleaned_text']);
-  });
+  // test('gets cleaned text - BI', function() {
+  //   checkFixture('businessinsider1' , ['cleaned_text']);
+  //   checkFixture('businessinsider2' , ['cleaned_text']);
+  //   return checkFixture('businessinsider3' , ['cleaned_text']);
+  // });
 
   test('gets cleaned text - CNBC', () => checkFixture('cnbc1' , ['cleaned_text']));
 

@@ -6,7 +6,7 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 let cleaner;
-const _ = require("lodash");
+const each = require("lodash/each");
 
 module.exports = (cleaner = function(doc) {
   removeBodyClasses(doc);
@@ -174,7 +174,7 @@ const getReplacementNodes = function(doc, div) {
     replacementText = [];
   }
 
-  _.each(nodesToRemove, n => doc(n).remove());
+  each(nodesToRemove, n => doc(n).remove());
 
   return nodesToReturn;
 };
@@ -201,7 +201,7 @@ var divToPara = function(doc, domType) {
       const replaceNodes = getReplacementNodes(doc, div);
 
       let html = "";
-      _.each(replaceNodes, function(node) {
+      each(replaceNodes, function(node) {
         if (node !== '') {
           return html += `<p>${node}</p>`;
         }

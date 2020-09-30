@@ -5,8 +5,8 @@
  */
 let formatter;
 const stopwords = require("./stopwords");
-const _ = require("lodash");
-const {XRegExp} = require('xregexp');
+const map = require("lodash/map");
+const filter = require("lodash/filter");
 
 module.exports = (formatter = function(doc, topNode, language) {
   removeNegativescoresNodes(doc, topNode);
@@ -95,13 +95,13 @@ var convertToText = function(doc, topNode) {
     txts = txts.concat(txt.split(/\r?\n/));
   }
 
-  txts = _.map(txts, txt => txt.trim());
+  txts = map(txts, txt => txt.trim());
 
   // Make sure each text chunk includes at least one text character or number.
   // This supports multiple languages words using XRegExp to generate the
   // regex that matches wranges of unicode characters used in words.
-  const regex = XRegExp('[\\p{Number}\\p{Letter}]');
-  txts = _.filter(txts, txt => regex.test(txt));
+  const regex = /[\d\w]/gu
+  txts = filter(txts, txt => regex.test(txt));
 
   return txts.join('\n\n');
 };
