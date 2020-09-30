@@ -28,6 +28,10 @@ suite('Unfluff', function() {
         const partialExtractText = cleanTestingText(dataLazy.text(), origText.length);
         ok(newText, `${site}: no text was found`);
         ok(data.text.length >= orig.expected.cleaned_text.length , `${site}: cleaned text was too short`);
+        if(origText !== newText) {
+          console.log('orig', origText)
+          console.log('new', newText)
+        }
         eq(origText, newText, `${site}: cleaned text didn't match expected value`);
         return eq(origText, partialExtractText, `${site}: cleaned text from partial extract didn't match expected value`);
 
