@@ -11,9 +11,9 @@ suite('Formatter', function() {
 
   test('replaces links with plain text', function() {
     const html = fs.readFileSync("./fixtures/test_businessWeek1.html").toString();
-    const origDoc = cheerio.load(html);
+    const origDoc = cheerio.load(html, {normalizeWhitespace: true, xml: true});
 
-    eq(origDoc("a").length, 223);
+    eq(origDoc("a").length, 232);
 
     formatter(origDoc, origDoc('body'), 'en');
     return eq(origDoc("a").length, 0);
