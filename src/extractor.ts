@@ -37,11 +37,17 @@ span[class*='date'], \
 p[class*='date'], \
 div[class*='date']`)
     return (
-      __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x1: any) => x1.attr('content'))), (x: any) =>
-        x.trim()
+      __guard__(
+        cleanNull(
+          __guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x1: any) => x1.attr('content')),
+        ),
+        (x: any) => x.trim(),
       ) ||
-      __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x3: any) => x3.attr('datetime'))), (x2: any) =>
-        x2.trim()
+      __guard__(
+        cleanNull(
+          __guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x3: any) => x3.attr('datetime')),
+        ),
+        (x2: any) => x2.trim(),
       ) ||
       cleanText(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x4: any) => x4.text())) ||
       null
@@ -109,8 +115,12 @@ meta[name='DC.publisher'], \
 meta[name='DC.Publisher']`)
     return (
       __guard__(
-        cleanNull(__guard__(publisherCandidates != null ? publisherCandidates.first() : undefined, (x1: any) => x1.attr('content'))),
-        (x: any) => x.trim()
+        cleanNull(
+          __guard__(publisherCandidates != null ? publisherCandidates.first() : undefined, (x1: any) =>
+            x1.attr('content'),
+          ),
+        ),
+        (x: any) => x.trim(),
       ) || null
     )
   },
@@ -167,7 +177,7 @@ meta[name='twitter:image0']`)
         if (href && text) {
           return links.push({
             text,
-            href
+            href,
           })
         }
       })
@@ -250,7 +260,10 @@ meta[name='twitter:image0']`)
   // Get the meta description of an html doc
   description(doc: any) {
     const tag = doc("meta[name=description], meta[property='og:description']")
-    return __guard__(cleanNull(__guard__(tag != null ? tag.first() : undefined, (x1: any) => x1.attr('content'))), (x: any) => x.trim())
+    return __guard__(
+      cleanNull(__guard__(tag != null ? tag.first() : undefined, (x1: any) => x1.attr('content'))),
+      (x: any) => x.trim(),
+    )
   },
 
   // Get the meta keywords of an html doc
@@ -329,7 +342,7 @@ meta[name='twitter:image0']`)
 
       // If this node has nearby nodes that contain
       // some good text, give the node some boost points
-      if (isBoostable(doc, node, lang) === true) {
+      if (isBoostable(doc, node, lang)) {
         if (cnt >= 0) {
           boostScore = (1.0 / startingBoost) * 50
           startingBoost += 1
@@ -397,7 +410,7 @@ meta[name='twitter:image0']`)
     })
 
     return doc(topNode)
-  }
+  },
 }
 
 var getVideoAttrs = function (doc: any, node: any) {
@@ -406,7 +419,7 @@ var getVideoAttrs = function (doc: any, node: any) {
   return (data = {
     src: el.attr('src'),
     height: el.attr('height'),
-    width: el.attr('width')
+    width: el.attr('width'),
   })
 }
 
@@ -697,31 +710,31 @@ var rawTitle = function (doc: any) {
     [
       __guard__(
         __guard__(doc("meta[property='og:title']"), (x1: any) => x1.first()),
-        (x: any) => x.attr('content')
+        (x: any) => x.attr('content'),
       ),
       __guard__(
         __guard__(doc("h1[class*='title']"), (x3: any) => x3.first()),
-        (x2: any) => x2.text()
+        (x2: any) => x2.text(),
       ),
       __guard__(
         __guard__(doc('title'), (x5: any) => x5.first()),
-        (x4: any) => x4.text()
+        (x4: any) => x4.text(),
       ),
       __guard__(
         __guard__(doc('h1'), (x7: any) => x7.first()),
-        (x6: any) => x6.text()
+        (x6: any) => x6.text(),
       ),
       __guard__(
         __guard__(doc('h2'), (x9: any) => x9.first()),
-        (x8: any) => x8.text()
-      )
+        (x8: any) => x8.text(),
+      ),
     ],
     function (candidate: any) {
       if (candidate && candidate.trim() && !gotTitle) {
         titleText = candidate.trim()
         return (gotTitle = true)
       }
-    }
+    },
   )
 
   return titleText

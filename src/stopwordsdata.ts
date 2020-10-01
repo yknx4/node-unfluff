@@ -545,7 +545,7 @@ export const stopWordsData = {
     'zero',
     'official',
     'sharply',
-    'criticized'
+    'criticized',
   ],
   es: [
     'de',
@@ -855,6 +855,6 @@ export const stopWordsData = {
     'tenida',
     'tenidos',
     'tenidas',
-    'tened'
-  ]
+    'tened',
+  ],
 }

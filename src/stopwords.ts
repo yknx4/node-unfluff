@@ -4,9 +4,9 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-let stopwords
 import each from 'lodash/each'
 import { stopWordsData } from './stopwordsdata'
+let stopwords
 
 const cache = {}
 
@@ -20,7 +20,7 @@ export default stopwords = function (content: string, language: 'en' | 'es') {
 
   if (!stopWords) {
     console.error(`WARNING: No stopwords file found for '${language}' - defaulting to English!`)
-    stopWords = stopWordsData['en']
+    stopWords = stopWordsData.en
   }
 
   if (cache.hasOwnProperty(language)) {
@@ -39,7 +39,7 @@ export default stopwords = function (content: string, language: 'en' | 'es') {
 
   each(words, function (w: any) {
     count += 1
-    if (stopWords.indexOf(w.toLowerCase()) > -1) {
+    if (stopWords.includes(w.toLowerCase())) {
       return overlappingStopwords.push(w.toLowerCase())
     }
   })
@@ -47,7 +47,7 @@ export default stopwords = function (content: string, language: 'en' | 'es') {
   return {
     wordCount: count,
     stopwordCount: overlappingStopwords.length,
-    stopWords: overlappingStopwords
+    stopWords: overlappingStopwords,
   }
 }
 

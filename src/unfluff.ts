@@ -4,10 +4,10 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-let unfluff
 import cheerio from 'cheerio'
 import extractor from './extractor'
 import cleaner from './cleaner'
+let unfluff
 
 module.exports = unfluff = function (html: any, language: any) {
   const doc = cheerio.load(html)
@@ -26,7 +26,7 @@ module.exports = unfluff = function (html: any, language: any) {
     lang: lng,
     canonicalLink: extractor.canonicalLink(doc),
     tags: extractor.tags(doc),
-    image: extractor.image(doc)
+    image: extractor.image(doc),
   }
 
   // Step 1: Clean the doc
@@ -172,7 +172,7 @@ unfluff.lazy = function (html: any, language: any) {
       const topNode = getTopNode.call(this, doc, this.lang())
       // @ts-expect-error ts-migrate(2551) FIXME: Property 'links_' does not exist on type '{ title(... Remove this comment to see the full error message
       return (this.links_ = extractor.links(doc, topNode, this.lang()))
-    }
+    },
   }
 }
 

@@ -3,10 +3,10 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-let formatter
 import stopwords from './stopwords'
 import map from 'lodash/map'
 import filter from 'lodash/filter'
+let formatter
 
 export default formatter = function (doc: any, topNode: any, language: any) {
   removeNegativescoresNodes(doc, topNode)
@@ -146,7 +146,12 @@ var removeFewwordsParagraphs = function (doc: any, topNode: any, language: any) 
     const text = el.text()
 
     const stopWords = stopwords(text, language)
-    if ((tag !== 'br' || text !== '\\r') && stopWords.stopwordCount < 3 && el.find('object').length === 0 && el.find('embed').length === 0) {
+    if (
+      (tag !== 'br' || text !== '\\r') &&
+      stopWords.stopwordCount < 3 &&
+      el.find('object').length === 0 &&
+      el.find('embed').length === 0
+    ) {
       return doc(el).remove()
     } else {
       const trimmed = text.trim()
