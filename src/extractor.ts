@@ -5,15 +5,12 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'each'.
-const each = require("lodash/each");
-const uniq = require("lodash/uniq");
-// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'stopwords'... Remove this comment to see the full error message
-const stopwords = require("./stopwords");
-// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'formatter'... Remove this comment to see the full error message
-const formatter = require("./formatter");
+import each from 'lodash/each'
+import uniq from 'lodash/uniq'
+import stopwords from './stopwords'
+import formatter from './formatter'
 
-module.exports = {
+export default {
   // Grab the date of an html doc
   date(doc: any) {
     const dateCandidates = doc(`meta[property='article:published_time'], \
@@ -38,25 +35,36 @@ li[property*='datePublished'], \
 time, \
 span[class*='date'], \
 p[class*='date'], \
-div[class*='date']`);
-    return __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x1: any) => x1.attr("content"))), (x: any) => x.trim()) || __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x3: any) => x3.attr("datetime"))), (x2: any) => x2.trim()) || cleanText(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x4: any) => x4.text())) || null;
+div[class*='date']`)
+    return (
+      __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x1: any) => x1.attr('content'))), (x: any) =>
+        x.trim()
+      ) ||
+      __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x3: any) => x3.attr('datetime'))), (x2: any) =>
+        x2.trim()
+      ) ||
+      cleanText(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x4: any) => x4.text())) ||
+      null
+    )
   },
-
 
   // Grab the copyright line
   copyright(doc: any) {
     const copyrightCandidates = doc(`p[class*='copyright'], div[class*='copyright'], span[class*='copyright'], li[class*='copyright'], \
-p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyright']`);
-    let text = __guard__(copyrightCandidates != null ? copyrightCandidates.first() : undefined, (x: any) => x.text());
+p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyright']`)
+    let text = __guard__(copyrightCandidates != null ? copyrightCandidates.first() : undefined, (x: any) => x.text())
     if (!text) {
       // try to find the copyright in the text
-      text = doc("body").text().replace(/\s*[\r\n]+\s*/g, ". ");
-      if (!(text.indexOf("©") > 0)) { return null; }
+      text = doc('body')
+        .text()
+        .replace(/\s*[\r\n]+\s*/g, '. ')
+      if (!(text.indexOf('©') > 0)) {
+        return null
+      }
     }
-    const copyright = text.replace(/.*?©(\s*copyright)?([^,;:.|\r\n]+).*/gi, "$2").trim();
-    return cleanText(copyright);
+    const copyright = text.replace(/.*?©(\s*copyright)?([^,;:.|\r\n]+).*/gi, '$2').trim()
+    return cleanText(copyright)
   },
-
 
   // Grab the author of an html doc
   author(doc: any) {
@@ -66,27 +74,31 @@ meta[name='dcterms.creator'], \
 meta[name='DC.creator'], \
 meta[name='DC.Creator'], \
 meta[name='dc.creator'], \
-meta[name='creator']`);
-    const authorList = [];
-    authorCandidates.each(function() {
+meta[name='creator']`)
+    const authorList = []
+    authorCandidates.each(function () {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const author = __guard__(cleanNull(__guard__(doc(this), (x1: any) => x1.attr("content"))), (x: any) => x.trim());
+      const author = __guard__(cleanNull(__guard__(doc(this), (x1: any) => x1.attr('content'))), (x: any) => x.trim())
       if (author) {
-        return authorList.push(author);
+        return authorList.push(author)
       }
-    });
+    })
     // fallback to a named author div
     if (authorList.length === 0) {
-      const fallbackAuthor = __guard__(doc("span[class*='author']").first(), (x: any) => x.text()) || __guard__(doc("p[class*='author']").first(), (x1: any) => x1.text()) || __guard__(doc("div[class*='author']").first(), (x2: any) => x2.text()) || 
-      __guard__(doc("span[class*='byline']").first(), (x3: any) => x3.text()) || __guard__(doc("p[class*='byline']").first(), (x4: any) => x4.text()) || __guard__(doc("div[class*='byline']").first(), (x5: any) => x5.text());
+      const fallbackAuthor =
+        __guard__(doc("span[class*='author']").first(), (x: any) => x.text()) ||
+        __guard__(doc("p[class*='author']").first(), (x1: any) => x1.text()) ||
+        __guard__(doc("div[class*='author']").first(), (x2: any) => x2.text()) ||
+        __guard__(doc("span[class*='byline']").first(), (x3: any) => x3.text()) ||
+        __guard__(doc("p[class*='byline']").first(), (x4: any) => x4.text()) ||
+        __guard__(doc("div[class*='byline']").first(), (x5: any) => x5.text())
       if (fallbackAuthor) {
-        authorList.push(cleanText(fallbackAuthor));
+        authorList.push(cleanText(fallbackAuthor))
       }
     }
 
-    return authorList;
+    return authorList
   },
-
 
   // Grab the publisher of the page/site
   publisher(doc: any) {
@@ -94,32 +106,35 @@ meta[name='creator']`);
 meta[itemprop=name], \
 meta[name='dc.publisher'], \
 meta[name='DC.publisher'], \
-meta[name='DC.Publisher']`);
-    return __guard__(cleanNull(__guard__(publisherCandidates != null ? publisherCandidates.first() : undefined, (x1: any) => x1.attr("content"))), (x: any) => x.trim()) || null;
+meta[name='DC.Publisher']`)
+    return (
+      __guard__(
+        cleanNull(__guard__(publisherCandidates != null ? publisherCandidates.first() : undefined, (x1: any) => x1.attr('content'))),
+        (x: any) => x.trim()
+      ) || null
+    )
   },
-
 
   // Grab the title of an html doc (excluding junk)
   // Hard-truncates titles containing colon or spaced dash
   title(doc: any) {
-    const titleText = rawTitle(doc);
-    return cleanTitle(titleText, ["|", " - ", "»", ":"]);
+    const titleText = rawTitle(doc)
+    return cleanTitle(titleText, ['|', ' - ', '»', ':'])
   },
 
   // Grab the title with soft truncation
   softTitle(doc: any) {
-    const titleText = rawTitle(doc);
-    return cleanTitle(titleText, ["|", " - ", "»"]);
+    const titleText = rawTitle(doc)
+    return cleanTitle(titleText, ['|', ' - ', '»'])
   },
-
 
   // Grab the 'main' text chunk
   text(doc: any, topNode: any, lang: any) {
     if (topNode) {
-      topNode = postCleanup(doc, topNode, lang);
-      return formatter(doc, topNode, lang);
+      topNode = postCleanup(doc, topNode, lang)
+      return formatter(doc, topNode, lang)
     } else {
-      return "";
+      return ''
     }
   },
 
@@ -130,561 +145,584 @@ meta[property='og:image:url'], \
 meta[itemprop=image], \
 meta[name='twitter:image:src'], \
 meta[name='twitter:image'], \
-meta[name='twitter:image0']`);
+meta[name='twitter:image0']`)
 
-    if ((images.length > 0) && cleanNull(images.first().attr('content'))) {
-      return cleanNull(images.first().attr('content'));
+    if (images.length > 0 && cleanNull(images.first().attr('content'))) {
+      return cleanNull(images.first().attr('content'))
     }
 
-    return null;
+    return null
   },
 
   // Find any links in the doc
   links(doc: any, topNode: any, lang: any) {
-    const links: any = [];
-    const gatherLinks = function(doc: any, topNode: any) {
-      const nodes = topNode.find('a');
-      return nodes.each(function() {
+    const links: any = []
+    const gatherLinks = function (doc: any, topNode: any) {
+      const nodes = topNode.find('a')
+      return nodes.each(function () {
         // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const href = doc(this).attr('href');
+        const href = doc(this).attr('href')
         // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const text = doc(this).html();
+        const text = doc(this).html()
         if (href && text) {
           return links.push({
             text,
             href
-          });
+          })
         }
-      });
-    };
-      
-    if (topNode) {
-      topNode = postCleanup(doc, topNode, lang);
-      gatherLinks(doc, topNode);
+      })
     }
-    return links;
+
+    if (topNode) {
+      topNode = postCleanup(doc, topNode, lang)
+      gatherLinks(doc, topNode)
+    }
+    return links
   },
-      
+
   // Find any embedded videos in the doc
   videos(doc: any, topNode: any) {
-    const videoList: any = [];
-    const candidates = doc(topNode).find("iframe, embed, object, video");
+    const videoList: any = []
+    const candidates = doc(topNode).find('iframe, embed, object, video')
 
-    candidates.each(function() {
+    candidates.each(function () {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const candidate = doc(this);
-      const tag = candidate[0].name;
+      const candidate = doc(this)
+      const tag = candidate[0].name
 
-      if (tag === "embed") {
-        if (candidate.parent() && (candidate.parent()[0].name === "object")) {
-          return videoList.push(getObjectTag(doc, candidate));
+      if (tag === 'embed') {
+        if (candidate.parent() && candidate.parent()[0].name === 'object') {
+          return videoList.push(getObjectTag(doc, candidate))
         } else {
-          return videoList.push(getVideoAttrs(doc, candidate));
+          return videoList.push(getVideoAttrs(doc, candidate))
         }
-      } else if (tag === "object") {
-        return videoList.push(getObjectTag(doc, candidate));
-      } else if ((tag === "iframe") || (tag === "video")) {
-        return videoList.push(getVideoAttrs(doc, candidate));
+      } else if (tag === 'object') {
+        return videoList.push(getObjectTag(doc, candidate))
+      } else if (tag === 'iframe' || tag === 'video') {
+        return videoList.push(getVideoAttrs(doc, candidate))
       }
-    });
+    })
 
     // Filter out junky or duplicate videos
-    const urls: any = [];
-    const results: any = [];
-    each(videoList, function(vid: any) {
-      if (vid && vid.height && vid.width && (urls.indexOf(vid.src) === -1)) {
-        results.push(vid);
-        return urls.push(vid.src);
+    const urls: any = []
+    const results: any = []
+    each(videoList, function (vid: any) {
+      if (vid && vid.height && vid.width && urls.indexOf(vid.src) === -1) {
+        results.push(vid)
+        return urls.push(vid.src)
       }
-    });
+    })
 
-    return results;
+    return results
   },
 
   // Grab the favicon from an html doc
   favicon(doc: any) {
-    const tag = doc('link').filter(function() {
+    const tag = doc('link').filter(function () {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      return __guard__(doc(this).attr('rel'), (x: any) => x.toLowerCase()) === 'shortcut icon';
-    });
-    return tag.attr('href');
+      return __guard__(doc(this).attr('rel'), (x: any) => x.toLowerCase()) === 'shortcut icon'
+    })
+    return tag.attr('href')
   },
 
   // Determine the language of an html doc
   lang(doc: any) {
     // Check the <html> tag
-    let l = __guard__(doc("html"), (x: any) => x.attr("lang"));
+    let l = __guard__(doc('html'), (x: any) => x.attr('lang'))
 
     if (!l) {
       // Otherwise look up for a content-language in meta
-      const tag = doc("meta[name=lang]") || doc("meta[http-equiv=content-language]");
-      l = tag != null ? tag.attr("content") : undefined;
+      const tag = doc('meta[name=lang]') || doc('meta[http-equiv=content-language]')
+      l = tag != null ? tag.attr('content') : undefined
     }
 
     if (l) {
       // Just return the 2 letter ISO language code with no country
-      const value = l.slice(0, 2);
+      const value = l.slice(0, 2)
       if (/^[A-Za-z]{2}$/.test(value)) {
-        return value.toLowerCase();
+        return value.toLowerCase()
       }
     }
 
-    return null;
+    return null
   },
 
   // Get the meta description of an html doc
   description(doc: any) {
-    const tag = doc("meta[name=description], meta[property='og:description']");
-    return __guard__(cleanNull(__guard__(tag != null ? tag.first() : undefined, (x1: any) => x1.attr("content"))), (x: any) => x.trim());
+    const tag = doc("meta[name=description], meta[property='og:description']")
+    return __guard__(cleanNull(__guard__(tag != null ? tag.first() : undefined, (x1: any) => x1.attr('content'))), (x: any) => x.trim())
   },
 
   // Get the meta keywords of an html doc
   keywords(doc: any) {
-    const tag = doc("meta[name=keywords]");
-    return cleanNull(tag != null ? tag.attr("content") : undefined);
+    const tag = doc('meta[name=keywords]')
+    return cleanNull(tag != null ? tag.attr('content') : undefined)
   },
 
   // Get the canonical link of an html doc
   canonicalLink(doc: any) {
-    const tag = doc("link[rel=canonical]");
-    return cleanNull(tag != null ? tag.attr("href") : undefined);
+    const tag = doc('link[rel=canonical]')
+    return cleanNull(tag != null ? tag.attr('href') : undefined)
   },
 
   // Get any tags or keywords from an html doc
   tags(doc: any) {
-    let elements = doc("a[rel='tag']");
+    let elements = doc("a[rel='tag']")
 
     if (elements.length === 0) {
-      elements = doc("a[href*='/tag/'], a[href*='/tags/'], a[href*='/topic/'], a[href*='?keyword=']");
+      elements = doc("a[href*='/tag/'], a[href*='/tags/'], a[href*='/topic/'], a[href*='?keyword=']")
       if (elements.length === 0) {
-        return [];
+        return []
       }
     }
 
-    const tags: any = [];
-    elements.each(function() {
+    const tags: any = []
+    elements.each(function () {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const el = doc(this);
+      const el = doc(this)
 
-      const tag = el.text().trim();
-      tag.replace(/[\s\t\n]+/g, '');
+      const tag = el.text().trim()
+      tag.replace(/[\s\t\n]+/g, '')
 
-      if (tag && (tag.length > 0)) {
-        return tags.push(tag);
+      if (tag && tag.length > 0) {
+        return tags.push(tag)
       }
-    });
+    })
 
-    return uniq(tags);
+    return uniq(tags)
   },
 
   // Walk the document's text nodes and find the most 'texty' node in the doc
   calculateBestNode(doc: any, lang: any) {
-    let topNode: any = null;
-    const nodesToCheck = doc("p, pre, td");
+    let topNode: any = null
+    const nodesToCheck = doc('p, pre, td')
 
-    let startingBoost = 1.0;
-    let cnt = 0;
-    let i = 0;
-    const parentNodes: any = [];
-    const nodesWithText: any = [];
+    let startingBoost = 1.0
+    let cnt = 0
+    let i = 0
+    const parentNodes: any = []
+    const nodesWithText: any = []
 
     // Walk all the p, pre and td nodes
-    nodesToCheck.each(function() {
+    nodesToCheck.each(function () {
       // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const node = doc(this);
+      const node = doc(this)
 
-      const textNode = node.text();
-      const wordStats = stopwords(textNode, lang);
-      const highLinkDensity = isHighlinkDensity(doc, node);
+      const textNode = node.text()
+      const wordStats = stopwords(textNode, lang)
+      const highLinkDensity = isHighlinkDensity(doc, node)
 
       // If a node contains multiple common words and isn't just a bunch
       // of links, it's worth consideration of being 'texty'
-      if ((wordStats.stopwordCount > 2) && !highLinkDensity) {
-        return nodesWithText.push(node);
+      if (wordStats.stopwordCount > 2 && !highLinkDensity) {
+        return nodesWithText.push(node)
       }
-    });
+    })
 
-    const nodesNumber = nodesWithText.length;
-    const negativeScoring = 0;
-    const bottomNegativescoreNodes = nodesNumber * 0.25;
+    const nodesNumber = nodesWithText.length
+    const negativeScoring = 0
+    const bottomNegativescoreNodes = nodesNumber * 0.25
 
     // Walk all the potentially 'texty' nodes
-    each(nodesWithText, function(node: any) {
-      let boostScore = 0.0;
+    each(nodesWithText, function (node: any) {
+      let boostScore = 0.0
 
       // If this node has nearby nodes that contain
       // some good text, give the node some boost points
       if (isBoostable(doc, node, lang) === true) {
         if (cnt >= 0) {
-          boostScore = (1.0 / startingBoost) * 50;
-          startingBoost += 1;
+          boostScore = (1.0 / startingBoost) * 50
+          startingBoost += 1
         }
       }
 
       if (nodesNumber > 15) {
-        if ((nodesNumber - i) <= bottomNegativescoreNodes) {
-          const booster = bottomNegativescoreNodes - (nodesNumber - i);
-          boostScore = -1.0 * Math.pow(booster, 2);
-          const negscore = Math.abs(boostScore) + negativeScoring;
+        if (nodesNumber - i <= bottomNegativescoreNodes) {
+          const booster = bottomNegativescoreNodes - (nodesNumber - i)
+          boostScore = -1.0 * Math.pow(booster, 2)
+          const negscore = Math.abs(boostScore) + negativeScoring
 
           if (negscore > 40) {
-            boostScore = 5.0;
+            boostScore = 5.0
           }
         }
       }
 
       // Give the current node a score of how many common words
       // it contains plus any boost
-      const textNode = node.text();
-      const wordStats = stopwords(textNode, lang);
-      const upscore = Math.floor(wordStats.stopwordCount + boostScore);
+      const textNode = node.text()
+      const wordStats = stopwords(textNode, lang)
+      const upscore = Math.floor(wordStats.stopwordCount + boostScore)
 
       // Propigate the score upwards
-      const parentNode = node.parent();
-      updateScore(parentNode, upscore);
-      updateNodeCount(parentNode, 1);
+      const parentNode = node.parent()
+      updateScore(parentNode, upscore)
+      updateNodeCount(parentNode, 1)
 
       if (parentNodes.indexOf(parentNode[0]) === -1) {
-        parentNodes.push(parentNode[0]);
+        parentNodes.push(parentNode[0])
       }
 
-      const parentParentNode = parentNode.parent();
+      const parentParentNode = parentNode.parent()
 
       if (parentParentNode) {
-        updateNodeCount(parentParentNode, 1);
-        updateScore(parentParentNode, upscore / 2);
+        updateNodeCount(parentParentNode, 1)
+        updateScore(parentParentNode, upscore / 2)
 
         if (parentNodes.indexOf(parentParentNode[0]) === -1) {
-          parentNodes.push(parentParentNode[0]);
+          parentNodes.push(parentParentNode[0])
         }
       }
 
-      cnt += 1;
-      return i += 1;
-    });
+      cnt += 1
+      return (i += 1)
+    })
 
-    let topNodeScore = 0;
+    let topNodeScore = 0
 
     // Walk each parent and parent-parent and find the one that
     // contains the highest sum score of 'texty' child nodes.
     // That's probably out best node!
-    each(parentNodes, function(e: any) {
-      const score = getScore(doc(e));
+    each(parentNodes, function (e: any) {
+      const score = getScore(doc(e))
 
       if (score > topNodeScore) {
-        topNode = e;
-        topNodeScore = score;
+        topNode = e
+        topNodeScore = score
       }
 
       if (topNode === null) {
-        return topNode = e;
+        return (topNode = e)
       }
-    });
+    })
 
-    return doc(topNode);
+    return doc(topNode)
   }
-};
+}
 
-
-var getVideoAttrs = function(doc: any, node: any) {
-  let data;
-  const el = doc(node);
-  return data = {
+var getVideoAttrs = function (doc: any, node: any) {
+  let data
+  const el = doc(node)
+  return (data = {
     src: el.attr('src'),
     height: el.attr('height'),
     width: el.attr('width')
-  };
-};
+  })
+}
 
-var getObjectTag = function(doc: any, node: any) {
-  const srcNode = node.find('param[name=movie]');
-  if (!(srcNode.length > 0)) { return null; }
+var getObjectTag = function (doc: any, node: any) {
+  const srcNode = node.find('param[name=movie]')
+  if (!(srcNode.length > 0)) {
+    return null
+  }
 
-  const src = srcNode.attr("value");
-  const video = getVideoAttrs(doc, node);
-  video.src = src;
-  return video;
-};
+  const src = srcNode.attr('value')
+  const video = getVideoAttrs(doc, node)
+  video.src = src
+  return video
+}
 
 // Find the biggest chunk of text in the title
-const biggestTitleChunk = function(title: any, splitter: any) {
-  let largeTextLength = 0;
-  let largeTextIndex = 0;
+const biggestTitleChunk = function (title: any, splitter: any) {
+  let largeTextLength = 0
+  let largeTextIndex = 0
 
-  const titlePieces = title.split(splitter);
+  const titlePieces = title.split(splitter)
 
   // find the largest substring
-  each(titlePieces, function(piece: any, i: any){
+  each(titlePieces, function (piece: any, i: any) {
     if (piece.length > largeTextLength) {
-      largeTextLength = piece.length;
-      return largeTextIndex = i;
+      largeTextLength = piece.length
+      return (largeTextIndex = i)
     }
-  });
+  })
 
-  return titlePieces[largeTextIndex];
-};
+  return titlePieces[largeTextIndex]
+}
 
 // Given a text node, check all previous siblings.
 // If the sibling node looks 'texty' and isn't too many
 // nodes away, it's probably some yummy text
-var isBoostable = function(doc: any, node: any, lang: any) {
-  let stepsAway = 0;
-  const minimumStopwordCount = 5;
-  const maxStepsawayFromNode = 3;
+var isBoostable = function (doc: any, node: any, lang: any) {
+  let stepsAway = 0
+  const minimumStopwordCount = 5
+  const maxStepsawayFromNode = 3
 
-  const nodes = node.prevAll();
+  const nodes = node.prevAll()
 
-  let boostable = false;
+  let boostable = false
 
-  nodes.each(function() {
+  nodes.each(function () {
     // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const currentNode = doc(this);
-    const currentNodeTag = currentNode[0].name;
+    const currentNode = doc(this)
+    const currentNodeTag = currentNode[0].name
 
-    if (currentNodeTag === "p") {
+    if (currentNodeTag === 'p') {
       // Make sure the node isn't more than 3 hops away
       if (stepsAway >= maxStepsawayFromNode) {
-        boostable = false;
-        return false;
+        boostable = false
+        return false
       }
 
-      const paraText = currentNode.text();
-      const wordStats = stopwords(paraText, lang);
+      const paraText = currentNode.text()
+      const wordStats = stopwords(paraText, lang)
 
       // Check if the node contains more than 5 common words
       if (wordStats.stopwordCount > minimumStopwordCount) {
-        boostable = true;
-        return false;
+        boostable = true
+        return false
       }
 
-      return stepsAway += 1;
+      return (stepsAway += 1)
     }
-  });
+  })
 
-  return boostable;
-};
+  return boostable
+}
 
-const addSiblings = function(doc: any, topNode: any, lang: any) {
-  const baselinescoreSiblingsPara = getSiblingsScore(doc, topNode, lang);
-  const sibs = topNode.prevAll();
+const addSiblings = function (doc: any, topNode: any, lang: any) {
+  const baselinescoreSiblingsPara = getSiblingsScore(doc, topNode, lang)
+  const sibs = topNode.prevAll()
 
-  sibs.each(function() {
+  sibs.each(function () {
     // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const currentNode = doc(this);
-    const ps = getSiblingsContent(doc, lang, currentNode, baselinescoreSiblingsPara);
-    return each(ps, (p: any) => topNode.prepend(`<p>${p}</p>`));
-  });
-  return topNode;
-};
+    const currentNode = doc(this)
+    const ps = getSiblingsContent(doc, lang, currentNode, baselinescoreSiblingsPara)
+    return each(ps, (p: any) => topNode.prepend(`<p>${p}</p>`))
+  })
+  return topNode
+}
 
-var getSiblingsContent = function(doc: any, lang: any, currentSibling: any, baselinescoreSiblingsPara: any) {
-
-  if ((currentSibling[0].name === 'p') && (currentSibling.text().length > 0)) {
-    return [currentSibling];
+var getSiblingsContent = function (doc: any, lang: any, currentSibling: any, baselinescoreSiblingsPara: any) {
+  if (currentSibling[0].name === 'p' && currentSibling.text().length > 0) {
+    return [currentSibling]
   } else {
-    const potentialParagraphs = currentSibling.find("p");
+    const potentialParagraphs = currentSibling.find('p')
     if (potentialParagraphs === null) {
-      return null;
+      return null
     } else {
-      const ps: any = [];
-      potentialParagraphs.each(function() {
+      const ps: any = []
+      potentialParagraphs.each(function () {
         // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const firstParagraph = doc(this);
-        const txt = firstParagraph.text();
+        const firstParagraph = doc(this)
+        const txt = firstParagraph.text()
 
         if (txt.length > 0) {
-          const wordStats = stopwords(txt, lang);
-          const paragraphScore = wordStats.stopwordCount;
-          const siblingBaselineScore = 0.30;
-          const highLinkDensity = isHighlinkDensity(doc, firstParagraph);
-          const score = baselinescoreSiblingsPara * siblingBaselineScore;
+          const wordStats = stopwords(txt, lang)
+          const paragraphScore = wordStats.stopwordCount
+          const siblingBaselineScore = 0.3
+          const highLinkDensity = isHighlinkDensity(doc, firstParagraph)
+          const score = baselinescoreSiblingsPara * siblingBaselineScore
 
-          if ((score < paragraphScore) && !highLinkDensity) {
-            return ps.push(txt);
+          if (score < paragraphScore && !highLinkDensity) {
+            return ps.push(txt)
           }
         }
-      });
+      })
 
-      return ps;
+      return ps
     }
   }
-};
+}
 
-var getSiblingsScore = function(doc: any, topNode: any, lang: any) {
-  let base = 100000;
-  let paragraphsNumber = 0;
-  let paragraphsScore = 0;
-  const nodesToCheck = topNode.find("p");
+var getSiblingsScore = function (doc: any, topNode: any, lang: any) {
+  let base = 100000
+  let paragraphsNumber = 0
+  let paragraphsScore = 0
+  const nodesToCheck = topNode.find('p')
 
-  nodesToCheck.each(function() {
+  nodesToCheck.each(function () {
     // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const node = doc(this);
-    const textNode = node.text();
-    const wordStats = stopwords(textNode, lang);
-    const highLinkDensity = isHighlinkDensity(doc, node);
+    const node = doc(this)
+    const textNode = node.text()
+    const wordStats = stopwords(textNode, lang)
+    const highLinkDensity = isHighlinkDensity(doc, node)
 
-    if ((wordStats.stopwordCount > 2) && !highLinkDensity) {
-      paragraphsNumber += 1;
-      return paragraphsScore += wordStats.stopwordCount;
+    if (wordStats.stopwordCount > 2 && !highLinkDensity) {
+      paragraphsNumber += 1
+      return (paragraphsScore += wordStats.stopwordCount)
     }
-  });
+  })
 
   if (paragraphsNumber > 0) {
-    base = paragraphsScore / paragraphsNumber;
+    base = paragraphsScore / paragraphsNumber
   }
 
-  return base;
-};
+  return base
+}
 
 // Keep track of a node's score with a gravityScore attribute
-var updateScore = function(node: any, addToScore: any) {
-  let currentScore = 0;
-  const scoreString = node.attr('gravityScore');
+var updateScore = function (node: any, addToScore: any) {
+  let currentScore = 0
+  const scoreString = node.attr('gravityScore')
   if (scoreString) {
-    currentScore = parseInt(scoreString);
+    currentScore = parseInt(scoreString)
   }
 
-  const newScore = currentScore + addToScore;
-  return node.attr("gravityScore", newScore);
-};
+  const newScore = currentScore + addToScore
+  return node.attr('gravityScore', newScore)
+}
 
 // Keep track of # of 'texty' child nodes under this node with
 // graveityNodes attribute
-var updateNodeCount = function(node: any, addToCount: any) {
-  let currentScore = 0;
-  const countString = node.attr('gravityNodes');
+var updateNodeCount = function (node: any, addToCount: any) {
+  let currentScore = 0
+  const countString = node.attr('gravityNodes')
   if (countString) {
-    currentScore = parseInt(countString);
+    currentScore = parseInt(countString)
   }
 
-  const newScore = currentScore + addToCount;
-  return node.attr("gravityNodes", newScore);
-};
+  const newScore = currentScore + addToCount
+  return node.attr('gravityNodes', newScore)
+}
 
 // Check the ratio of links to words in a node.
 // If the ratio is high, this node is probably trash.
-var isHighlinkDensity = function(doc: any, node: any) {
-  const links = node.find('a');
-  if (!(links.length > 0)) { return false; }
+var isHighlinkDensity = function (doc: any, node: any) {
+  const links = node.find('a')
+  if (!(links.length > 0)) {
+    return false
+  }
 
-  const txt = node.text();
-  const words = txt.split(' ');
-  const numberOfWords = words.length;
+  const txt = node.text()
+  const words = txt.split(' ')
+  const numberOfWords = words.length
 
-  const sb: any = [];
-  links.each(function() {
+  const sb: any = []
+  links.each(function () {
     // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return sb.push(doc(this).text());
-  });
+    return sb.push(doc(this).text())
+  })
 
-  const linkText = sb.join(' ');
-  const linkWords = linkText.split(' ');
-  const numberOfLinkWords = linkWords.length;
-  const numberOfLinks = links.length;
-  const percentLinkWords = numberOfLinkWords / numberOfWords;
-  const score = percentLinkWords * numberOfLinks;
+  const linkText = sb.join(' ')
+  const linkWords = linkText.split(' ')
+  const numberOfLinkWords = linkWords.length
+  const numberOfLinks = links.length
+  const percentLinkWords = numberOfLinkWords / numberOfWords
+  const score = percentLinkWords * numberOfLinks
 
-  return score >= 1.0;
-};
+  return score >= 1.0
+}
 
 // Return a node's gravity score (amount of texty-ness under it)
-var getScore = function(node: any) {
-  const grvScoreString = node.attr('gravityScore');
+var getScore = function (node: any) {
+  const grvScoreString = node.attr('gravityScore')
   if (!grvScoreString) {
-    return 0;
+    return 0
   } else {
-    return parseInt(grvScoreString);
+    return parseInt(grvScoreString)
   }
-};
+}
 
+const isTableAndNoParaExist = function (doc: any, e: any) {
+  const subParagraphs = e.find('p')
 
-const isTableAndNoParaExist = function(doc: any, e: any) {
-  const subParagraphs = e.find("p");
-
-  subParagraphs.each(function() {
+  subParagraphs.each(function () {
     // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const p = doc(this);
-    const txt = p.text();
+    const p = doc(this)
+    const txt = p.text()
 
     if (txt.length < 25) {
-      return doc(p).remove();
+      return doc(p).remove()
     }
-  });
+  })
 
-  const subParagraphs2 = e.find("p");
-  if ((subParagraphs2.length === 0) && !(["td", "ul", "ol"].includes(e[0].name))) {
-    return true;
+  const subParagraphs2 = e.find('p')
+  if (subParagraphs2.length === 0 && !['td', 'ul', 'ol'].includes(e[0].name)) {
+    return true
   } else {
-    return false;
+    return false
   }
-};
+}
 
-const isNodescoreThresholdMet = function(doc: any, node: any, e: any) {
-  const topNodeScore = getScore(node);
-  const currentNodeScore = getScore(e);
-  const thresholdScore = topNodeScore * 0.08;
+const isNodescoreThresholdMet = function (doc: any, node: any, e: any) {
+  const topNodeScore = getScore(node)
+  const currentNodeScore = getScore(e)
+  const thresholdScore = topNodeScore * 0.08
 
-  if ((currentNodeScore < thresholdScore) && !(["td", "ul", "ol", "blockquote"].includes(e[0].name))) {
-    return false;
+  if (currentNodeScore < thresholdScore && !['td', 'ul', 'ol', 'blockquote'].includes(e[0].name)) {
+    return false
   } else {
-    return true;
+    return true
   }
-};
+}
 
 // Remove any remaining trash nodes (clusters of nodes with little/no content)
-var postCleanup = function(doc: any, targetNode: any, lang: any) {
-  const node = addSiblings(doc, targetNode, lang);
+var postCleanup = function (doc: any, targetNode: any, lang: any) {
+  const node = addSiblings(doc, targetNode, lang)
 
-  node.children().each(function() {
+  node.children().each(function () {
     // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const e = doc(this);
-    const eTag = e[0].name;
+    const e = doc(this)
+    const eTag = e[0].name
     if (!['p', 'a'].includes(eTag)) {
       if (isHighlinkDensity(doc, e) || isTableAndNoParaExist(doc, e) || !isNodescoreThresholdMet(doc, node, e)) {
-        return doc(e).remove();
+        return doc(e).remove()
       }
     }
-  });
+  })
 
-  return node;
-};
+  return node
+}
 
-var cleanNull = (text: any) => text != null ? text.replace(/^null$/g, "") : undefined;
+var cleanNull = (text: any) => (text != null ? text.replace(/^null$/g, '') : undefined)
 
-var cleanText = (text: any) => text != null ? text.replace(/[\r\n\t]/g, " ").replace(/\s\s+/g, " ").replace(/<!--.+?-->/g, "").replace(/�/g, "").trim() : undefined;
+var cleanText = (text: any) =>
+  text != null
+    ? text
+        .replace(/[\r\n\t]/g, ' ')
+        .replace(/\s\s+/g, ' ')
+        .replace(/<!--.+?-->/g, '')
+        .replace(/�/g, '')
+        .trim()
+    : undefined
 
-
-var cleanTitle = function(title: any, delimiters: any) {
-  let titleText = title || "";
-  let usedDelimeter = false;
-  each(delimiters, function(c: any) {
-    if ((titleText.indexOf(c) >= 0) && !usedDelimeter) {
-      titleText = biggestTitleChunk(titleText, c);
-      return usedDelimeter = true;
+var cleanTitle = function (title: any, delimiters: any) {
+  let titleText = title || ''
+  let usedDelimeter = false
+  each(delimiters, function (c: any) {
+    if (titleText.indexOf(c) >= 0 && !usedDelimeter) {
+      titleText = biggestTitleChunk(titleText, c)
+      return (usedDelimeter = true)
     }
-  });
-  return cleanText(titleText);
-};
+  })
+  return cleanText(titleText)
+}
 
-
-var rawTitle = function(doc: any) {
-  let gotTitle = false;
-  let titleText = "";
+var rawTitle = function (doc: any) {
+  let gotTitle = false
+  let titleText = ''
   // The first h1 or h2 is a useful fallback
-  each([__guard__(__guard__(doc("meta[property='og:title']"), (x1: any) => x1.first()), (x: any) => x.attr("content")), 
-  __guard__(__guard__(doc("h1[class*='title']"), (x3: any) => x3.first()), (x2: any) => x2.text()), 
-  __guard__(__guard__(doc("title"), (x5: any) => x5.first()), (x4: any) => x4.text()), 
-  __guard__(__guard__(doc("h1"), (x7: any) => x7.first()), (x6: any) => x6.text()), 
-  __guard__(__guard__(doc("h2"), (x9: any) => x9.first()), (x8: any) => x8.text())], function(candidate: any) {
-    if (candidate && candidate.trim() && !gotTitle) {
-      titleText = candidate.trim();
-      return gotTitle = true;
+  each(
+    [
+      __guard__(
+        __guard__(doc("meta[property='og:title']"), (x1: any) => x1.first()),
+        (x: any) => x.attr('content')
+      ),
+      __guard__(
+        __guard__(doc("h1[class*='title']"), (x3: any) => x3.first()),
+        (x2: any) => x2.text()
+      ),
+      __guard__(
+        __guard__(doc('title'), (x5: any) => x5.first()),
+        (x4: any) => x4.text()
+      ),
+      __guard__(
+        __guard__(doc('h1'), (x7: any) => x7.first()),
+        (x6: any) => x6.text()
+      ),
+      __guard__(
+        __guard__(doc('h2'), (x9: any) => x9.first()),
+        (x8: any) => x8.text()
+      )
+    ],
+    function (candidate: any) {
+      if (candidate && candidate.trim() && !gotTitle) {
+        titleText = candidate.trim()
+        return (gotTitle = true)
+      }
     }
-  });
+  )
 
-  return titleText;
-};
-
-function __guard__(value: any, transform: any) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
+  return titleText
 }

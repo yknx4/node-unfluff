@@ -5,12 +5,10 @@
  * DS205: Consider reworking code to avoid use of IIFEs
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
-// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'cleaner'.
 let cleaner;
-// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'each'.
-const each = require("lodash/each");
+import each from "lodash/each";
 
-module.exports = (cleaner = function(doc: any) {
+export default cleaner = function(doc: any) {
   removeBodyClasses(doc);
   cleanArticleTags(doc);
   cleanEmTags(doc);
@@ -30,7 +28,7 @@ module.exports = (cleaner = function(doc: any) {
   divToPara(doc, 'div');
   divToPara(doc, 'span');
   return doc;
-});
+};
 
 var removeBodyClasses = (doc: any) => doc("body").removeClass();
 
@@ -245,8 +243,3 @@ var cleanErrantLinebreaks = (doc: any) => doc("p").each(function() {
     }
   });
 });
-
-// @ts-expect-error ts-migrate(2393) FIXME: Duplicate function implementation.
-function __guard__(value: any, transform: any) {
-  return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
-}
