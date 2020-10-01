@@ -1,1 +1,1 @@
-{"version":3,"file":"unfluff.d.ts","sourceRoot":"","sources":["../src/unfluff.ts"],"names":[],"mappings":"AAWA,iBAAwB,OAAO,CAAC,IAAI,EAAE,MAAM,EAAE,QAAQ,CAAC,EAAE,IAAI,GAAG,IAAI;;;;;;;;;;;;;;EAmCnE;kBAnCuB,OAAO;;;;;;;;;;;;;;;;;;;;;;;;;;;eAAP,OAAO"}
+{"version":3,"file":"unfluff.d.ts","sourceRoot":"","sources":["../src/unfluff.ts"],"names":[],"mappings":"AAWA,iBAAwB,OAAO,CAAC,IAAI,EAAE,MAAM,EAAE,QAAQ,CAAC,EAAE,IAAI,GAAG,IAAI;;;;;;;;;;;;;;;;;EAmCnE;kBAnCuB,OAAO;;;;;;;;;;;;;;;;;;;;;;;;;;;eAAP,OAAO"}

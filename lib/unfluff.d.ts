@@ -1,7 +1,7 @@
 declare function unfluff(html: string, language?: 'es' | 'en'): {
     title: string;
     softTitle: string;
-    date: string;
+    date: string | null;
     author: string[];
     publisher: string | null;
     copyright: string | null;
@@ -11,13 +11,16 @@ declare function unfluff(html: string, language?: 'es' | 'en'): {
     lang: "en" | "es";
     canonicalLink: string | undefined;
     tags: string[];
-    image: string | null | undefined;
+    image: string | null;
+    videos: never[];
+    links: never[];
+    text: string;
 };
 declare namespace unfluff {
     var lazy: (html: string, language?: "en" | "es" | undefined) => {
         title(): string;
         softTitle(): string;
-        date(): string;
+        date(): string | null;
         copyright(): string | null;
         author(): string[];
         publisher(): string | null;
@@ -27,7 +30,7 @@ declare namespace unfluff {
         lang(): "en" | "es" | null;
         canonicalLink(): string | undefined;
         tags(): string[];
-        image(): string | null | undefined;
+        image(): string | null;
         videos(): {
             src: string;
             height: string;

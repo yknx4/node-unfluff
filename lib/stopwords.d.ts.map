@@ -1,1 +1,1 @@
-{"version":3,"file":"stopwords.d.ts","sourceRoot":"","sources":["../src/stopwords.ts"],"names":[],"mappings":"AAaA,MAAM,CAAC,OAAO,UAAU,SAAS,CAAC,OAAO,EAAE,MAAM,EAAE,QAAQ,EAAE,IAAI,GAAG,IAAI;;;;EAoCvE"}
+{"version":3,"file":"stopwords.d.ts","sourceRoot":"","sources":["../src/stopwords.ts"],"names":[],"mappings":"AAaA,MAAM,CAAC,OAAO,UAAU,SAAS,CAAC,OAAO,EAAE,MAAM,EAAE,QAAQ,CAAC,EAAE,IAAI,GAAG,IAAI;;;;EAoCxE"}

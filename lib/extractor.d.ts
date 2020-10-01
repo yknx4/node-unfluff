@@ -1,13 +1,13 @@
 /// <reference types="cheerio" />
 declare const _default: {
-    date(doc: cheerio.Root): string;
+    date(doc: cheerio.Root): string | null;
     copyright(doc: cheerio.Root): string | null;
     author(doc: cheerio.Root): string[];
     publisher(doc: cheerio.Root): string | null;
     title(doc: cheerio.Root): string;
     softTitle(doc: cheerio.Root): string;
     text(doc: cheerio.Root, topNode: cheerio.Cheerio | null | undefined, lang: 'es' | 'en'): string;
-    image(doc: cheerio.Root): string | null | undefined;
+    image(doc: cheerio.Root): string | null;
     links(doc: cheerio.Root, topNode: cheerio.Cheerio, lang: 'es' | 'en'): {
         text: string;
         href: any;

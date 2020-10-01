@@ -1,4 +1,4 @@
-export default function stopwords(content: string, language: 'en' | 'es'): {
+export default function stopwords(content: string, language?: 'en' | 'es'): {
     wordCount: number;
     stopwordCount: number;
     stopWords: string[];
