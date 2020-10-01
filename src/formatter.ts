@@ -6,9 +6,8 @@
 import stopwords from './stopwords'
 import map from 'lodash/map'
 import filter from 'lodash/filter'
-let formatter
 
-export default formatter = function (doc: any, topNode: any, language: any) {
+export default function formatter(doc: cheerio.Root, topNode: cheerio.Cheerio, language: 'en' | 'es') {
   removeNegativescoresNodes(doc, topNode)
   linksToText(doc, topNode)
   addNewlineToBr(doc, topNode)
@@ -17,44 +16,41 @@ export default formatter = function (doc: any, topNode: any, language: any) {
   return convertToText(doc, topNode)
 }
 
-var linksToText = function (doc: any, topNode: any) {
+function linksToText(doc: cheerio.Root, topNode: cheerio.Cheerio) {
   const nodes = topNode.find('a')
 
-  return nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return doc(this).replaceWith(doc(this).html())
+  return nodes.each(function (_, e) {
+    return doc(e).replaceWith(doc(e).html() ?? '')
   })
 }
 
-const ulToText = function (doc: any, node: any) {
+function ulToText(doc: cheerio.Root, node: cheerio.Cheerio) {
   const nodes = node.find('li')
   let txt = ''
 
-  nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return (txt = txt + `\n * ${doc(this).text()}`)
+  nodes.each(function (_, e) {
+    return (txt = txt + `\n * ${doc(e).text()}`)
   })
 
   txt = txt + '\n'
   return txt
 }
 
-var replaceWithText = function (doc: any, topNode: any) {
+function replaceWithText(doc: cheerio.Root, topNode: cheerio.Cheerio) {
   const nodes = topNode.find('b, strong, i, br, sup')
-  return nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return doc(this).replaceWith(doc(this).text())
+  return nodes.each(function (_, e) {
+    return doc(e).replaceWith(doc(e).text())
   })
 }
 
-const cleanParagraphText = function (rawText: any) {
+function cleanParagraphText(rawText: string) {
   const txt = rawText.trim()
   txt.replace(/[\s\t]+/g, ' ')
   return txt
 }
 
 // Turn an html element (and children) into nicely formatted text
-var convertToText = function (doc: any, topNode: any) {
+function convertToText(doc: cheerio.Root, topNode: cheerio.Cheerio) {
   let txts: any = []
   const nodes = topNode.contents()
 
@@ -62,10 +58,9 @@ var convertToText = function (doc: any, topNode: any) {
   // html elements
   let hangingText = ''
 
-  nodes.each(function () {
+  nodes.each(function (_, e) {
     let txt
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const node = doc(this)
+    const node = doc(e)
     const nodeType = node[0].type
     const nodeName = node[0].name
 
@@ -110,23 +105,21 @@ var convertToText = function (doc: any, topNode: any) {
   return txts.join('\n\n')
 }
 
-var addNewlineToBr = function (doc: any, topNode: any) {
+function addNewlineToBr(doc: cheerio.Root, topNode: cheerio.Cheerio) {
   const brs = topNode.find('br')
-  return brs.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const br = doc(this)
+  return brs.each(function (_, e) {
+    const br = doc(e)
     return br.replaceWith('\n\n')
   })
 }
 
 // Remove nodes with a negative score because they are probably trash
-var removeNegativescoresNodes = function (doc: any, topNode: any) {
+function removeNegativescoresNodes(doc: cheerio.Root, topNode: cheerio.Cheerio) {
   const gravityItems = topNode.find('*[gravityScore]')
 
-  return gravityItems.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const item = doc(this)
-    const score = parseInt(item.attr('gravityScore')) || 0
+  return gravityItems.each(function (_, e) {
+    const item = doc(e)
+    const score = parseInt(item.attr('gravityScore') ?? '0') ?? 0
 
     if (score < 1) {
       return doc(item).remove()
@@ -136,12 +129,11 @@ var removeNegativescoresNodes = function (doc: any, topNode: any) {
 
 // remove paragraphs that have less than x number of words,
 // would indicate that it's some sort of link
-var removeFewwordsParagraphs = function (doc: any, topNode: any, language: any) {
+function removeFewwordsParagraphs(doc: cheerio.Root, topNode: cheerio.Cheerio, language: 'en' | 'es') {
   const allNodes = topNode.find('*')
 
-  return allNodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const el = doc(this)
+  return allNodes.each(function (_, e) {
+    const el = doc(e)
     const tag = el[0].name
     const text = el.text()
 
