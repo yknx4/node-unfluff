@@ -5,14 +5,17 @@
  * DS207: Consider shorter variations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'each'.
 const each = require("lodash/each");
 const uniq = require("lodash/uniq");
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'stopwords'... Remove this comment to see the full error message
 const stopwords = require("./stopwords");
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'formatter'... Remove this comment to see the full error message
 const formatter = require("./formatter");
 
 module.exports = {
   // Grab the date of an html doc
-  date(doc) {
+  date(doc: any) {
     const dateCandidates = doc(`meta[property='article:published_time'], \
 meta[itemprop*='datePublished'], meta[name='dcterms.modified'], \
 meta[name='dcterms.date'], \
@@ -36,15 +39,15 @@ time, \
 span[class*='date'], \
 p[class*='date'], \
 div[class*='date']`);
-    return __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, x1 => x1.attr("content"))), x => x.trim()) || __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, x3 => x3.attr("datetime"))), x2 => x2.trim()) || cleanText(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, x4 => x4.text())) || null;
+    return __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x1: any) => x1.attr("content"))), (x: any) => x.trim()) || __guard__(cleanNull(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x3: any) => x3.attr("datetime"))), (x2: any) => x2.trim()) || cleanText(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x4: any) => x4.text())) || null;
   },
 
 
   // Grab the copyright line
-  copyright(doc) {
+  copyright(doc: any) {
     const copyrightCandidates = doc(`p[class*='copyright'], div[class*='copyright'], span[class*='copyright'], li[class*='copyright'], \
 p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyright']`);
-    let text = __guard__(copyrightCandidates != null ? copyrightCandidates.first() : undefined, x => x.text());
+    let text = __guard__(copyrightCandidates != null ? copyrightCandidates.first() : undefined, (x: any) => x.text());
     if (!text) {
       // try to find the copyright in the text
       text = doc("body").text().replace(/\s*[\r\n]+\s*/g, ". ");
@@ -56,7 +59,7 @@ p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyrig
 
 
   // Grab the author of an html doc
-  author(doc) {
+  author(doc: any) {
     const authorCandidates = doc(`meta[property='article:author'], \
 meta[property='og:article:author'], meta[name='author'], \
 meta[name='dcterms.creator'], \
@@ -66,15 +69,16 @@ meta[name='dc.creator'], \
 meta[name='creator']`);
     const authorList = [];
     authorCandidates.each(function() {
-      const author = __guard__(cleanNull(__guard__(doc(this), x1 => x1.attr("content"))), x => x.trim());
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+      const author = __guard__(cleanNull(__guard__(doc(this), (x1: any) => x1.attr("content"))), (x: any) => x.trim());
       if (author) {
         return authorList.push(author);
       }
     });
     // fallback to a named author div
     if (authorList.length === 0) {
-      const fallbackAuthor = __guard__(doc("span[class*='author']").first(), x => x.text()) || __guard__(doc("p[class*='author']").first(), x1 => x1.text()) || __guard__(doc("div[class*='author']").first(), x2 => x2.text()) || 
-      __guard__(doc("span[class*='byline']").first(), x3 => x3.text()) || __guard__(doc("p[class*='byline']").first(), x4 => x4.text()) || __guard__(doc("div[class*='byline']").first(), x5 => x5.text());
+      const fallbackAuthor = __guard__(doc("span[class*='author']").first(), (x: any) => x.text()) || __guard__(doc("p[class*='author']").first(), (x1: any) => x1.text()) || __guard__(doc("div[class*='author']").first(), (x2: any) => x2.text()) || 
+      __guard__(doc("span[class*='byline']").first(), (x3: any) => x3.text()) || __guard__(doc("p[class*='byline']").first(), (x4: any) => x4.text()) || __guard__(doc("div[class*='byline']").first(), (x5: any) => x5.text());
       if (fallbackAuthor) {
         authorList.push(cleanText(fallbackAuthor));
       }
@@ -85,32 +89,32 @@ meta[name='creator']`);
 
 
   // Grab the publisher of the page/site
-  publisher(doc) {
+  publisher(doc: any) {
     const publisherCandidates = doc(`meta[property='og:site_name'], \
 meta[itemprop=name], \
 meta[name='dc.publisher'], \
 meta[name='DC.publisher'], \
 meta[name='DC.Publisher']`);
-    return __guard__(cleanNull(__guard__(publisherCandidates != null ? publisherCandidates.first() : undefined, x1 => x1.attr("content"))), x => x.trim()) || null;
+    return __guard__(cleanNull(__guard__(publisherCandidates != null ? publisherCandidates.first() : undefined, (x1: any) => x1.attr("content"))), (x: any) => x.trim()) || null;
   },
 
 
   // Grab the title of an html doc (excluding junk)
   // Hard-truncates titles containing colon or spaced dash
-  title(doc) {
+  title(doc: any) {
     const titleText = rawTitle(doc);
     return cleanTitle(titleText, ["|", " - ", "»", ":"]);
   },
 
   // Grab the title with soft truncation
-  softTitle(doc) {
+  softTitle(doc: any) {
     const titleText = rawTitle(doc);
     return cleanTitle(titleText, ["|", " - ", "»"]);
   },
 
 
   // Grab the 'main' text chunk
-  text(doc, topNode, lang) {
+  text(doc: any, topNode: any, lang: any) {
     if (topNode) {
       topNode = postCleanup(doc, topNode, lang);
       return formatter(doc, topNode, lang);
@@ -120,7 +124,7 @@ meta[name='DC.Publisher']`);
   },
 
   // Grab an image for the page
-  image(doc) {
+  image(doc: any) {
     const images = doc(`meta[property='og:image'], \
 meta[property='og:image:url'], \
 meta[itemprop=image], \
@@ -136,12 +140,14 @@ meta[name='twitter:image0']`);
   },
 
   // Find any links in the doc
-  links(doc, topNode, lang) {
-    const links = [];
-    const gatherLinks = function(doc, topNode) {
+  links(doc: any, topNode: any, lang: any) {
+    const links: any = [];
+    const gatherLinks = function(doc: any, topNode: any) {
       const nodes = topNode.find('a');
       return nodes.each(function() {
+        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const href = doc(this).attr('href');
+        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const text = doc(this).html();
         if (href && text) {
           return links.push({
@@ -160,11 +166,12 @@ meta[name='twitter:image0']`);
   },
       
   // Find any embedded videos in the doc
-  videos(doc, topNode) {
-    const videoList = [];
+  videos(doc: any, topNode: any) {
+    const videoList: any = [];
     const candidates = doc(topNode).find("iframe, embed, object, video");
 
     candidates.each(function() {
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const candidate = doc(this);
       const tag = candidate[0].name;
 
@@ -182,9 +189,9 @@ meta[name='twitter:image0']`);
     });
 
     // Filter out junky or duplicate videos
-    const urls = [];
-    const results = [];
-    each(videoList, function(vid) {
+    const urls: any = [];
+    const results: any = [];
+    each(videoList, function(vid: any) {
       if (vid && vid.height && vid.width && (urls.indexOf(vid.src) === -1)) {
         results.push(vid);
         return urls.push(vid.src);
@@ -195,17 +202,18 @@ meta[name='twitter:image0']`);
   },
 
   // Grab the favicon from an html doc
-  favicon(doc) {
+  favicon(doc: any) {
     const tag = doc('link').filter(function() {
-      return __guard__(doc(this).attr('rel'), x => x.toLowerCase()) === 'shortcut icon';
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+      return __guard__(doc(this).attr('rel'), (x: any) => x.toLowerCase()) === 'shortcut icon';
     });
     return tag.attr('href');
   },
 
   // Determine the language of an html doc
-  lang(doc) {
+  lang(doc: any) {
     // Check the <html> tag
-    let l = __guard__(doc("html"), x => x.attr("lang"));
+    let l = __guard__(doc("html"), (x: any) => x.attr("lang"));
 
     if (!l) {
       // Otherwise look up for a content-language in meta
@@ -225,25 +233,25 @@ meta[name='twitter:image0']`);
   },
 
   // Get the meta description of an html doc
-  description(doc) {
+  description(doc: any) {
     const tag = doc("meta[name=description], meta[property='og:description']");
-    return __guard__(cleanNull(__guard__(tag != null ? tag.first() : undefined, x1 => x1.attr("content"))), x => x.trim());
+    return __guard__(cleanNull(__guard__(tag != null ? tag.first() : undefined, (x1: any) => x1.attr("content"))), (x: any) => x.trim());
   },
 
   // Get the meta keywords of an html doc
-  keywords(doc) {
+  keywords(doc: any) {
     const tag = doc("meta[name=keywords]");
     return cleanNull(tag != null ? tag.attr("content") : undefined);
   },
 
   // Get the canonical link of an html doc
-  canonicalLink(doc) {
+  canonicalLink(doc: any) {
     const tag = doc("link[rel=canonical]");
     return cleanNull(tag != null ? tag.attr("href") : undefined);
   },
 
   // Get any tags or keywords from an html doc
-  tags(doc) {
+  tags(doc: any) {
     let elements = doc("a[rel='tag']");
 
     if (elements.length === 0) {
@@ -253,8 +261,9 @@ meta[name='twitter:image0']`);
       }
     }
 
-    const tags = [];
+    const tags: any = [];
     elements.each(function() {
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const el = doc(this);
 
       const tag = el.text().trim();
@@ -269,18 +278,19 @@ meta[name='twitter:image0']`);
   },
 
   // Walk the document's text nodes and find the most 'texty' node in the doc
-  calculateBestNode(doc, lang) {
-    let topNode = null;
+  calculateBestNode(doc: any, lang: any) {
+    let topNode: any = null;
     const nodesToCheck = doc("p, pre, td");
 
     let startingBoost = 1.0;
     let cnt = 0;
     let i = 0;
-    const parentNodes = [];
-    const nodesWithText = [];
+    const parentNodes: any = [];
+    const nodesWithText: any = [];
 
     // Walk all the p, pre and td nodes
     nodesToCheck.each(function() {
+      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
       const node = doc(this);
 
       const textNode = node.text();
@@ -299,7 +309,7 @@ meta[name='twitter:image0']`);
     const bottomNegativescoreNodes = nodesNumber * 0.25;
 
     // Walk all the potentially 'texty' nodes
-    each(nodesWithText, function(node) {
+    each(nodesWithText, function(node: any) {
       let boostScore = 0.0;
 
       // If this node has nearby nodes that contain
@@ -358,7 +368,7 @@ meta[name='twitter:image0']`);
     // Walk each parent and parent-parent and find the one that
     // contains the highest sum score of 'texty' child nodes.
     // That's probably out best node!
-    each(parentNodes, function(e) {
+    each(parentNodes, function(e: any) {
       const score = getScore(doc(e));
 
       if (score > topNodeScore) {
@@ -376,7 +386,7 @@ meta[name='twitter:image0']`);
 };
 
 
-var getVideoAttrs = function(doc, node) {
+var getVideoAttrs = function(doc: any, node: any) {
   let data;
   const el = doc(node);
   return data = {
@@ -386,7 +396,7 @@ var getVideoAttrs = function(doc, node) {
   };
 };
 
-var getObjectTag = function(doc, node) {
+var getObjectTag = function(doc: any, node: any) {
   const srcNode = node.find('param[name=movie]');
   if (!(srcNode.length > 0)) { return null; }
 
@@ -397,14 +407,14 @@ var getObjectTag = function(doc, node) {
 };
 
 // Find the biggest chunk of text in the title
-const biggestTitleChunk = function(title, splitter) {
+const biggestTitleChunk = function(title: any, splitter: any) {
   let largeTextLength = 0;
   let largeTextIndex = 0;
 
   const titlePieces = title.split(splitter);
 
   // find the largest substring
-  each(titlePieces, function(piece, i){
+  each(titlePieces, function(piece: any, i: any){
     if (piece.length > largeTextLength) {
       largeTextLength = piece.length;
       return largeTextIndex = i;
@@ -417,7 +427,7 @@ const biggestTitleChunk = function(title, splitter) {
 // Given a text node, check all previous siblings.
 // If the sibling node looks 'texty' and isn't too many
 // nodes away, it's probably some yummy text
-var isBoostable = function(doc, node, lang) {
+var isBoostable = function(doc: any, node: any, lang: any) {
   let stepsAway = 0;
   const minimumStopwordCount = 5;
   const maxStepsawayFromNode = 3;
@@ -427,6 +437,7 @@ var isBoostable = function(doc, node, lang) {
   let boostable = false;
 
   nodes.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const currentNode = doc(this);
     const currentNodeTag = currentNode[0].name;
 
@@ -453,19 +464,20 @@ var isBoostable = function(doc, node, lang) {
   return boostable;
 };
 
-const addSiblings = function(doc, topNode, lang) {
+const addSiblings = function(doc: any, topNode: any, lang: any) {
   const baselinescoreSiblingsPara = getSiblingsScore(doc, topNode, lang);
   const sibs = topNode.prevAll();
 
   sibs.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const currentNode = doc(this);
     const ps = getSiblingsContent(doc, lang, currentNode, baselinescoreSiblingsPara);
-    return each(ps, p => topNode.prepend(`<p>${p}</p>`));
+    return each(ps, (p: any) => topNode.prepend(`<p>${p}</p>`));
   });
   return topNode;
 };
 
-var getSiblingsContent = function(doc, lang, currentSibling, baselinescoreSiblingsPara) {
+var getSiblingsContent = function(doc: any, lang: any, currentSibling: any, baselinescoreSiblingsPara: any) {
 
   if ((currentSibling[0].name === 'p') && (currentSibling.text().length > 0)) {
     return [currentSibling];
@@ -474,8 +486,9 @@ var getSiblingsContent = function(doc, lang, currentSibling, baselinescoreSiblin
     if (potentialParagraphs === null) {
       return null;
     } else {
-      const ps = [];
+      const ps: any = [];
       potentialParagraphs.each(function() {
+        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
         const firstParagraph = doc(this);
         const txt = firstParagraph.text();
 
@@ -497,13 +510,14 @@ var getSiblingsContent = function(doc, lang, currentSibling, baselinescoreSiblin
   }
 };
 
-var getSiblingsScore = function(doc, topNode, lang) {
+var getSiblingsScore = function(doc: any, topNode: any, lang: any) {
   let base = 100000;
   let paragraphsNumber = 0;
   let paragraphsScore = 0;
   const nodesToCheck = topNode.find("p");
 
   nodesToCheck.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const node = doc(this);
     const textNode = node.text();
     const wordStats = stopwords(textNode, lang);
@@ -523,7 +537,7 @@ var getSiblingsScore = function(doc, topNode, lang) {
 };
 
 // Keep track of a node's score with a gravityScore attribute
-var updateScore = function(node, addToScore) {
+var updateScore = function(node: any, addToScore: any) {
   let currentScore = 0;
   const scoreString = node.attr('gravityScore');
   if (scoreString) {
@@ -536,7 +550,7 @@ var updateScore = function(node, addToScore) {
 
 // Keep track of # of 'texty' child nodes under this node with
 // graveityNodes attribute
-var updateNodeCount = function(node, addToCount) {
+var updateNodeCount = function(node: any, addToCount: any) {
   let currentScore = 0;
   const countString = node.attr('gravityNodes');
   if (countString) {
@@ -549,7 +563,7 @@ var updateNodeCount = function(node, addToCount) {
 
 // Check the ratio of links to words in a node.
 // If the ratio is high, this node is probably trash.
-var isHighlinkDensity = function(doc, node) {
+var isHighlinkDensity = function(doc: any, node: any) {
   const links = node.find('a');
   if (!(links.length > 0)) { return false; }
 
@@ -557,8 +571,9 @@ var isHighlinkDensity = function(doc, node) {
   const words = txt.split(' ');
   const numberOfWords = words.length;
 
-  const sb = [];
+  const sb: any = [];
   links.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     return sb.push(doc(this).text());
   });
 
@@ -573,7 +588,7 @@ var isHighlinkDensity = function(doc, node) {
 };
 
 // Return a node's gravity score (amount of texty-ness under it)
-var getScore = function(node) {
+var getScore = function(node: any) {
   const grvScoreString = node.attr('gravityScore');
   if (!grvScoreString) {
     return 0;
@@ -583,10 +598,11 @@ var getScore = function(node) {
 };
 
 
-const isTableAndNoParaExist = function(doc, e) {
+const isTableAndNoParaExist = function(doc: any, e: any) {
   const subParagraphs = e.find("p");
 
   subParagraphs.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const p = doc(this);
     const txt = p.text();
 
@@ -603,7 +619,7 @@ const isTableAndNoParaExist = function(doc, e) {
   }
 };
 
-const isNodescoreThresholdMet = function(doc, node, e) {
+const isNodescoreThresholdMet = function(doc: any, node: any, e: any) {
   const topNodeScore = getScore(node);
   const currentNodeScore = getScore(e);
   const thresholdScore = topNodeScore * 0.08;
@@ -616,10 +632,11 @@ const isNodescoreThresholdMet = function(doc, node, e) {
 };
 
 // Remove any remaining trash nodes (clusters of nodes with little/no content)
-var postCleanup = function(doc, targetNode, lang) {
+var postCleanup = function(doc: any, targetNode: any, lang: any) {
   const node = addSiblings(doc, targetNode, lang);
 
   node.children().each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const e = doc(this);
     const eTag = e[0].name;
     if (!['p', 'a'].includes(eTag)) {
@@ -632,15 +649,15 @@ var postCleanup = function(doc, targetNode, lang) {
   return node;
 };
 
-var cleanNull = text => text != null ? text.replace(/^null$/g, "") : undefined;
+var cleanNull = (text: any) => text != null ? text.replace(/^null$/g, "") : undefined;
 
-var cleanText = text => text != null ? text.replace(/[\r\n\t]/g, " ").replace(/\s\s+/g, " ").replace(/<!--.+?-->/g, "").replace(/�/g, "").trim() : undefined;
+var cleanText = (text: any) => text != null ? text.replace(/[\r\n\t]/g, " ").replace(/\s\s+/g, " ").replace(/<!--.+?-->/g, "").replace(/�/g, "").trim() : undefined;
 
 
-var cleanTitle = function(title, delimiters) {
+var cleanTitle = function(title: any, delimiters: any) {
   let titleText = title || "";
   let usedDelimeter = false;
-  each(delimiters, function(c) {
+  each(delimiters, function(c: any) {
     if ((titleText.indexOf(c) >= 0) && !usedDelimeter) {
       titleText = biggestTitleChunk(titleText, c);
       return usedDelimeter = true;
@@ -650,15 +667,15 @@ var cleanTitle = function(title, delimiters) {
 };
 
 
-var rawTitle = function(doc) {
+var rawTitle = function(doc: any) {
   let gotTitle = false;
   let titleText = "";
   // The first h1 or h2 is a useful fallback
-  each([__guard__(__guard__(doc("meta[property='og:title']"), x1 => x1.first()), x => x.attr("content")), 
-  __guard__(__guard__(doc("h1[class*='title']"), x3 => x3.first()), x2 => x2.text()), 
-  __guard__(__guard__(doc("title"), x5 => x5.first()), x4 => x4.text()), 
-  __guard__(__guard__(doc("h1"), x7 => x7.first()), x6 => x6.text()), 
-  __guard__(__guard__(doc("h2"), x9 => x9.first()), x8 => x8.text())], function(candidate) {
+  each([__guard__(__guard__(doc("meta[property='og:title']"), (x1: any) => x1.first()), (x: any) => x.attr("content")), 
+  __guard__(__guard__(doc("h1[class*='title']"), (x3: any) => x3.first()), (x2: any) => x2.text()), 
+  __guard__(__guard__(doc("title"), (x5: any) => x5.first()), (x4: any) => x4.text()), 
+  __guard__(__guard__(doc("h1"), (x7: any) => x7.first()), (x6: any) => x6.text()), 
+  __guard__(__guard__(doc("h2"), (x9: any) => x9.first()), (x8: any) => x8.text())], function(candidate: any) {
     if (candidate && candidate.trim() && !gotTitle) {
       titleText = candidate.trim();
       return gotTitle = true;
@@ -668,6 +685,6 @@ var rawTitle = function(doc) {
   return titleText;
 };
 
-function __guard__(value, transform) {
+function __guard__(value: any, transform: any) {
   return (typeof value !== 'undefined' && value !== null) ? transform(value) : undefined;
 }

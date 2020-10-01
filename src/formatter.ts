@@ -3,12 +3,15 @@
  * DS102: Remove unnecessary code created because of implicit returns
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'formatter'... Remove this comment to see the full error message
 let formatter;
+// @ts-expect-error ts-migrate(2451) FIXME: Cannot redeclare block-scoped variable 'stopwords'... Remove this comment to see the full error message
 const stopwords = require("./stopwords");
 const map = require("lodash/map");
 const filter = require("lodash/filter");
 
-module.exports = (formatter = function(doc, topNode, language) {
+// @ts-expect-error ts-migrate(2588) FIXME: Cannot assign to 'formatter' because it is a const... Remove this comment to see the full error message
+module.exports = (formatter = function(doc: any, topNode: any, language: any) {
   removeNegativescoresNodes(doc, topNode);
   linksToText(doc, topNode);
   addNewlineToBr(doc, topNode);
@@ -17,19 +20,21 @@ module.exports = (formatter = function(doc, topNode, language) {
   return convertToText(doc, topNode);
 });
 
-var linksToText = function(doc, topNode) {
+var linksToText = function(doc: any, topNode: any) {
   const nodes = topNode.find('a');
 
   return nodes.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     return doc(this).replaceWith(doc(this).html());
   });
 };
 
-const ulToText = function(doc, node) {
+const ulToText = function(doc: any, node: any) {
   const nodes = node.find('li');
   let txt = "";
 
   nodes.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     return txt = txt + `\n * ${doc(this).text()}`;
   });
 
@@ -37,22 +42,23 @@ const ulToText = function(doc, node) {
   return txt;
 };
 
-var replaceWithText = function(doc, topNode) {
+var replaceWithText = function(doc: any, topNode: any) {
   const nodes = topNode.find('b, strong, i, br, sup');
   return nodes.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     return doc(this).replaceWith(doc(this).text());
   });
 };
 
-const cleanParagraphText = function(rawText) {
+const cleanParagraphText = function(rawText: any) {
   const txt = rawText.trim();
   txt.replace(/[\s\t]+/g, ' ');
   return txt;
 };
 
 // Turn an html element (and children) into nicely formatted text
-var convertToText = function(doc, topNode) {
-  let txts = [];
+var convertToText = function(doc: any, topNode: any) {
+  let txts: any = [];
   const nodes = topNode.contents();
 
   // To hold any text fragments that end up in text nodes outside of
@@ -61,6 +67,7 @@ var convertToText = function(doc, topNode) {
 
   nodes.each(function() {
     let txt;
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const node = doc(this);
     const nodeType = node[0].type;
     const nodeName = node[0].name;
@@ -95,30 +102,32 @@ var convertToText = function(doc, topNode) {
     txts = txts.concat(txt.split(/\r?\n/));
   }
 
-  txts = map(txts, txt => txt.trim());
+  txts = map(txts, (txt: any) => txt.trim());
 
   // Make sure each text chunk includes at least one text character or number.
   // This supports multiple languages words using XRegExp to generate the
   // regex that matches wranges of unicode characters used in words.
   const regex = /[\d\w]/gu
-  txts = filter(txts, txt => regex.test(txt));
+  txts = filter(txts, (txt: any) => regex.test(txt));
 
   return txts.join('\n\n');
 };
 
-var addNewlineToBr = function(doc, topNode) {
+var addNewlineToBr = function(doc: any, topNode: any) {
   const brs = topNode.find("br");
   return brs.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const br = doc(this);
     return br.replaceWith("\n\n");
   });
 };
 
 // Remove nodes with a negative score because they are probably trash
-var removeNegativescoresNodes = function(doc, topNode) {
+var removeNegativescoresNodes = function(doc: any, topNode: any) {
   const gravityItems = topNode.find("*[gravityScore]");
 
   return gravityItems.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const item = doc(this);
     const score = parseInt(item.attr('gravityScore')) || 0;
 
@@ -130,10 +139,11 @@ var removeNegativescoresNodes = function(doc, topNode) {
 
 // remove paragraphs that have less than x number of words,
 // would indicate that it's some sort of link
-var removeFewwordsParagraphs = function(doc, topNode, language) {
+var removeFewwordsParagraphs = function(doc: any, topNode: any, language: any) {
   const allNodes = topNode.find("*");
 
   return allNodes.each(function() {
+    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
     const el = doc(this);
     const tag = el[0].name;
     const text = el.text();
