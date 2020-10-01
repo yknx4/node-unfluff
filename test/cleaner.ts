@@ -68,7 +68,7 @@ suite('Cleaner', function() {
     const html = fs.readFileSync("./fixtures/test_gizmodo1.html").toString();
     const origDoc = cheerio.load(html);
     let comments = origDoc('*').contents().filter(function() {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+      
       return this.type === "comment";
     });
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'eq'.
@@ -76,7 +76,7 @@ suite('Cleaner', function() {
 
     const newDoc = cleaner(origDoc);
     comments = newDoc('*').contents().filter(function() {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+      
       return this.type === "comment";
     });
     // @ts-expect-error ts-migrate(2304) FIXME: Cannot find name 'eq'.

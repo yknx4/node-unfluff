@@ -51,7 +51,7 @@ function cleanParagraphText(rawText: string) {
 
 // Turn an html element (and children) into nicely formatted text
 function convertToText(doc: cheerio.Root, topNode: cheerio.Cheerio) {
-  let txts: any = []
+  let txts: string[] = []
   const nodes = topNode.contents()
 
   // To hold any text fragments that end up in text nodes outside of

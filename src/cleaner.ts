@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/prefer-regexp-exec */
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
@@ -6,9 +7,9 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import each from 'lodash/each'
-let cleaner
+import { csLegacyGuard } from './__guard__'
 
-export default cleaner = function (doc: any) {
+export default function cleaner(doc: cheerio.Root) {
   removeBodyClasses(doc)
   cleanArticleTags(doc)
   cleanEmTags(doc)
@@ -30,115 +31,107 @@ export default cleaner = function (doc: any) {
   return doc
 }
 
-var removeBodyClasses = (doc: any) => doc('body').removeClass()
+const removeBodyClasses = (doc: cheerio.Root) => doc('body').removeClass()
 
-var cleanArticleTags = function (doc: any) {
+const cleanArticleTags = function (doc: cheerio.Root) {
   const articles = doc('article')
-  return articles.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    doc(this).removeAttr('id')
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    doc(this).removeAttr('name')
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return doc(this).removeAttr('class')
+  return articles.each(function (_, e) {
+    doc(e).removeAttr('id')
+
+    doc(e).removeAttr('name')
+
+    return doc(e).removeAttr('class')
   })
 }
 
-var cleanEmTags = function (doc: any) {
+const cleanEmTags = function (doc: cheerio.Root) {
   const ems = doc('em')
-  return ems.each(function () {
+  return ems.each(function (_, e) {
     const images = ems.find('img')
     if (images.length === 0) {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      return doc(this).replaceWith(doc(this).html())
+      return doc(e).replaceWith(doc(e).html() ?? '')
     }
   })
 }
 
-var cleanCodeBlocks = function (doc: any) {
+const cleanCodeBlocks = function (doc: cheerio.Root) {
   const nodes = doc("[class*='highlight-'], pre code, code, pre, ul.task-list")
-  return nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return doc(this).replaceWith(doc(this).text())
+  return nodes.each(function (_, e) {
+    return doc(e).replaceWith(doc(e).text())
   })
 }
 
-var removeDropCaps = function (doc: any) {
+const removeDropCaps = function (doc: cheerio.Root) {
   const nodes = doc('span[class~=dropcap], span[class~=drop_cap]')
-  return nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return doc(this).replaceWith(doc(this).html())
+  return nodes.each(function (_, e) {
+    return doc(e).replaceWith(doc(e).html() ?? '')
   })
 }
 
-var removeScriptsStyles = function (doc: any) {
+const removeScriptsStyles = function (doc: cheerio.Root) {
   doc('script').remove()
   doc('style').remove()
 
   const comments = doc('*')
     .contents()
-    .filter(function () {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      return this.type === 'comment'
+    .filter(function (_, e) {
+      return e.type === 'comment'
     })
 
   return doc(comments).remove()
 }
 
-var cleanBadTags = function (doc: any) {
+const cleanBadTags = function (doc: cheerio.Root) {
   const removeNodesRe =
     '^side$|combx|retweet|mediaarticlerelated|menucontainer|navbar|partner-gravity-ad|video-full-transcript|storytopbar-bucket|utility-bar|inline-share-tools|comment|PopularQuestions|contact|foot|footer|Footer|footnote|cnn_strycaptiontxt|cnn_html_slideshow|cnn_strylftcntnt|links|meta$|shoutbox|sponsor|tags|socialnetworking|socialNetworking|cnnStryHghLght|cnn_stryspcvbx|^inset$|pagetools|post-attributes|welcome_form|contentTools2|the_answers|communitypromo|runaroundLeft|subscribe|vcard|articleheadings|date|^print$|popup|author-dropdown|tools|socialtools|byline|konafilter|KonaFilter|breadcrumbs|^fn$|wp-caption-text|legende|ajoutVideo|timestamp|js_replies'
-  const re = new RegExp(removeNodesRe, 'i')
+  const re = new RegExp(removeNodesRe, 'gi')
 
-  const toRemove = doc('*').filter(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+  const toRemove = doc('*').filter(function (_, e) {
     return (
-      __guard__(doc(this).attr('id'), (x: any) => x.match(re)) ||
-      __guard__(doc(this).attr('class'), (x1: any) => x1.match(re)) ||
-      __guard__(doc(this).attr('name'), (x2: any) => x2.match(re))
+      csLegacyGuard(doc(e).attr('id'), (x) => re.test(x)) ??
+      csLegacyGuard(doc(e).attr('class'), (x1) => re.test(x1)) ??
+      csLegacyGuard(doc(e).attr('name'), (x2) => re.test(x2)) ??
+      false
     )
   })
 
   return doc(toRemove).remove()
 }
 
-var removeNodesRegex = function (doc: any, pattern: any) {
-  const toRemove = doc('div').filter(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
+const removeNodesRegex = function (doc: cheerio.Root, pattern: RegExp) {
+  const toRemove = doc('div').filter(function (_, e) {
     return (
-      __guard__(doc(this).attr('id'), (x: any) => x.match(pattern)) ||
-      __guard__(doc(this).attr('class'), (x1: any) => x1.match(pattern))
+      csLegacyGuard(doc(e).attr('id'), (x) => pattern.test(x)) ??
+      csLegacyGuard(doc(e).attr('class'), (x1) => pattern.test(x1)) ??
+      false
     )
   })
 
   return doc(toRemove).remove()
 }
 
-var cleanParaSpans = function (doc: any) {
+const cleanParaSpans = function (doc: cheerio.Root) {
   const nodes = doc('p span')
-  return nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return doc(this).replaceWith(doc(this).html())
+  return nodes.each(function (_, e) {
+    return doc(e).replaceWith(doc(e).html() ?? '')
   })
 }
 
-var cleanUnderlines = function (doc: any) {
+const cleanUnderlines = function (doc: cheerio.Root) {
   const nodes = doc('u')
-  return nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return doc(this).replaceWith(doc(this).html())
+  return nodes.each(function (_, e) {
+    return doc(e).replaceWith(doc(e).html() ?? '')
   })
 }
 
-const getReplacementNodes = function (doc: any, div: any) {
-  let replacementText: any = []
-  const nodesToReturn = []
-  const nodesToRemove: any = []
+const getReplacementNodes = function (doc: cheerio.Root, div: cheerio.Cheerio) {
+  let replacementText: string[] = []
+  const nodesToReturn: string[] = []
+  const nodesToRemove: cheerio.Cheerio[] = []
   const childs = div.contents()
 
-  childs.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const kid = doc(this)
+  childs.each(function (_, e) {
+    const kid = doc(e)
 
     // node is a p
     // and already have some replacement text
@@ -146,7 +139,7 @@ const getReplacementNodes = function (doc: any, div: any) {
       const txt = replacementText.join('')
       nodesToReturn.push(txt)
       replacementText = []
-      return nodesToReturn.push(doc(kid).html())
+      return nodesToReturn.push(doc(kid).html() ?? '')
 
       // node is a text node
     } else if (kid[0].type === 'text') {
@@ -158,11 +151,7 @@ const getReplacementNodes = function (doc: any, div: any) {
         let outer
         let previousSiblingNode = kidTextNode.prev()
 
-        while (
-          previousSiblingNode[0] &&
-          previousSiblingNode[0].name === 'a' &&
-          previousSiblingNode.attr('grv-usedalready') !== 'yes'
-        ) {
+        while (previousSiblingNode[0]?.name === 'a' && previousSiblingNode.attr('grv-usedalready') !== 'yes') {
           outer = ' ' + doc.html(previousSiblingNode) + ' '
           replacementText.push(outer)
           nodesToRemove.push(previousSiblingNode)
@@ -176,11 +165,7 @@ const getReplacementNodes = function (doc: any, div: any) {
 
         return (() => {
           const result = []
-          while (
-            nextSiblingNode[0] &&
-            nextSiblingNode[0].name === 'a' &&
-            nextSiblingNode.attr('grv-usedalready') !== 'yes'
-          ) {
+          while (nextSiblingNode[0]?.name === 'a' && nextSiblingNode.attr('grv-usedalready') !== 'yes') {
             outer = ' ' + doc.html(nextSiblingNode) + ' '
             replacementText.push(outer)
             nodesToRemove.push(nextSiblingNode)
@@ -193,7 +178,7 @@ const getReplacementNodes = function (doc: any, div: any) {
 
       // otherwise
     } else {
-      return nodesToReturn.push(doc(kid).html())
+      return nodesToReturn.push(doc(kid).html() ?? '')
     }
   })
 
@@ -204,36 +189,34 @@ const getReplacementNodes = function (doc: any, div: any) {
     replacementText = []
   }
 
-  each(nodesToRemove, (n: any) => doc(n).remove())
+  each(nodesToRemove, (n: cheerio.Cheerio) => doc(n).remove())
 
   return nodesToReturn
 }
 
-const replaceWithPara = function (doc: any, div: any) {
+const replaceWithPara = function (doc: cheerio.Root, div: cheerio.Element) {
   const divContent = doc(div).html()
-  return doc(div).replaceWith(`<p>${divContent}</p>`)
+  return doc(div).replaceWith(`<p>${divContent ?? ''}</p>`)
 }
 
-var divToPara = function (doc: any, domType: any) {
+const divToPara = function (doc: cheerio.Root, domType: string) {
   const divs = doc(domType)
   const lastCount = divs.length + 1
 
   const tags = ['a', 'blockquote', 'dl', 'div', 'img', 'ol', 'p', 'pre', 'table', 'ul']
 
-  return divs.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const div = doc(this)
+  return divs.each(function (_, e) {
+    const div = doc(e)
 
     const items = div.find(tags.join(', '))
 
     if (items.length === 0) {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      return replaceWithPara(doc, this)
+      return replaceWithPara(doc, e)
     } else {
       const replaceNodes = getReplacementNodes(doc, div)
 
       let html = ''
-      each(replaceNodes, function (node: any) {
+      each(replaceNodes, function (node: string) {
         if (node !== '') {
           return (html += `<p>${node}</p>`)
         }
@@ -248,15 +231,13 @@ var divToPara = function (doc: any, domType: any) {
 // For plain text nodes directly inside of p tags that contain random single
 // line breaks, remove those junky line breaks. They would never be rendered
 // by a browser anyway.
-var cleanErrantLinebreaks = (doc: any) =>
-  doc('p').each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const node = doc(this)
+const cleanErrantLinebreaks = (doc: cheerio.Root) =>
+  doc('p').each(function (_, e) {
+    const node = doc(e)
     const c = node.contents()
 
-    return doc(c).each(function () {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const n = doc(this)
+    return doc(c).each(function (_, e) {
+      const n = doc(e)
       if (n[0].type === 'text') {
         return n.replaceWith(n.text().replace(/([^\n])\n([^\n])/g, '$1 $2'))
       }

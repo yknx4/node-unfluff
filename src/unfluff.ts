@@ -1,17 +1,18 @@
 /*
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
- * DS207: Consider shorter variations of null checks
+ * DS207: Consider shorter letiations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import cheerio from 'cheerio'
 import extractor from './extractor'
 import cleaner from './cleaner'
+import { Link, Video } from './definitions'
 let unfluff
 
-module.exports = unfluff = function (html: any, language: any) {
+module.exports = unfluff = function (html: string, language?: 'es' | 'en') {
   const doc = cheerio.load(html)
-  const lng = language || extractor.lang(doc)
+  const lng: 'es' | 'en' = language ?? (extractor.lang(doc) as 'en' | 'es') ?? 'en'
 
   const pageData = {
     title: extractor.title(doc),
@@ -48,156 +49,121 @@ module.exports = unfluff = function (html: any, language: any) {
 
 // Allow access to document properties with lazy evaluation
 // @ts-expect-error ts-migrate(2339) FIXME: Property 'lazy' does not exist on type '(html: any... Remove this comment to see the full error message
-unfluff.lazy = function (html: any, language: any) {
+unfluff.lazy = function (html: string, language?: 'es' | 'en') {
+  let _parsedDoc: cheerio.Root | null = null
+  let _cleanedDoc: cheerio.Root | null = null
+  let _topNode: cheerio.Cheerio | null = null
+  const getParsedDoc = (docHtml: string) => (_parsedDoc === null ? (_parsedDoc = cheerio.load(docHtml)) : _parsedDoc)
+  const getCleanedDoc = (docHtml: string) =>
+    _cleanedDoc === null ? (_cleanedDoc = cleaner(getParsedDoc(docHtml))) : _cleanedDoc
+  const getTopNode = (doc: cheerio.Root, lng: 'es' | 'en') =>
+    _topNode === null ? (_topNode = extractor.calculateBestNode(doc, lng)) : _topNode
+  let title_: string | null = null
+  let softTitle_: string | null = null
+  let date_: string | null = null
+  let copyright_: string | null = null
+  let author_: string[] | null = null
+  let publisher_: string | null = null
+  let text_: string | null = null
+  let favicon_: string | undefined
+  let description_: string | undefined
+  let keywords_: string | undefined
+  let language_: 'es' | 'en' | null = null
+  let canonicalLink_: string | undefined
+  let tags_: string[] | null = null
+  let image_: string | null | undefined = null
+  let links_: Link[] | null = null
+  let videos_: Video[] | null = null
   return {
-    // @ts-expect-error ts-migrate(7023) FIXME: 'title' implicitly has return type 'any' because i... Remove this comment to see the full error message
     title() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'title_' does not exist on type '{ title(... Remove this comment to see the full error message
-      return this.title_ != null ? this.title_ : (this.title_ = extractor.title(doc))
+      const doc = getParsedDoc(html)
+      return title_ != null ? title_ : (title_ = extractor.title(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'softTitle' implicitly has return type 'any' becau... Remove this comment to see the full error message
     softTitle() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'softTitle_' does not exist on type '{ ti... Remove this comment to see the full error message
-      return this.softTitle_ != null ? this.softTitle_ : (this.softTitle_ = extractor.softTitle(doc))
+      const doc = getParsedDoc(html)
+      return softTitle_ != null ? softTitle_ : (softTitle_ = extractor.softTitle(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'date' implicitly has return type 'any' because it... Remove this comment to see the full error message
     date() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'date_' does not exist on type '{ title()... Remove this comment to see the full error message
-      return this.date_ != null ? this.date_ : (this.date_ = extractor.date(doc))
+      const doc = getParsedDoc(html)
+      return date_ != null ? date_ : (date_ = extractor.date(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'copyright' implicitly has return type 'any' becau... Remove this comment to see the full error message
     copyright() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'copyright_' does not exist on type '{ ti... Remove this comment to see the full error message
-      return this.copyright_ != null ? this.copyright_ : (this.copyright_ = extractor.copyright(doc))
+      const doc = getParsedDoc(html)
+      return copyright_ != null ? copyright_ : (copyright_ = extractor.copyright(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'author' implicitly has return type 'any' because ... Remove this comment to see the full error message
     author() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'author_' does not exist on type '{ title... Remove this comment to see the full error message
-      return this.author_ != null ? this.author_ : (this.author_ = extractor.author(doc))
+      const doc = getParsedDoc(html)
+      return author_ != null ? author_ : (author_ = extractor.author(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'publisher' implicitly has return type 'any' becau... Remove this comment to see the full error message
     publisher() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'publisher_' does not exist on type '{ ti... Remove this comment to see the full error message
-      return this.publisher_ != null ? this.publisher_ : (this.publisher_ = extractor.publisher(doc))
+      const doc = getParsedDoc(html)
+      return publisher_ != null ? publisher_ : (publisher_ = extractor.publisher(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'favicon' implicitly has return type 'any' because... Remove this comment to see the full error message
     favicon() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'favicon_' does not exist on type '{ titl... Remove this comment to see the full error message
-      return this.favicon_ != null ? this.favicon_ : (this.favicon_ = extractor.favicon(doc))
+      const doc = getParsedDoc(html)
+      return favicon_ != null ? favicon_ : (favicon_ = extractor.favicon(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'description' implicitly has return type 'any' bec... Remove this comment to see the full error message
     description() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'description_' does not exist on type '{ ... Remove this comment to see the full error message
-      return this.description_ != null ? this.description_ : (this.description_ = extractor.description(doc))
+      const doc = getParsedDoc(html)
+      return description_ != null ? description_ : (description_ = extractor.description(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'keywords' implicitly has return type 'any' becaus... Remove this comment to see the full error message
     keywords() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'keywords_' does not exist on type '{ tit... Remove this comment to see the full error message
-      return this.keywords_ != null ? this.keywords_ : (this.keywords_ = extractor.keywords(doc))
+      const doc = getParsedDoc(html)
+      return keywords_ != null ? keywords_ : (keywords_ = extractor.keywords(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'lang' implicitly has return type 'any' because it... Remove this comment to see the full error message
-    lang() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2339) FIXME: Property 'language_' does not exist on type '{ tit... Remove this comment to see the full error message
-      return this.language_ != null ? this.language_ : (this.language_ = language || extractor.lang(doc))
+    lang(): 'es' | 'en' | null {
+      const doc = getParsedDoc(html)
+      return language_ != null ? language_ : (language_ = language ?? extractor.lang(doc))
     },
 
-    // @ts-expect-error ts-migrate(7023) FIXME: 'canonicalLink' implicitly has return type 'any' b... Remove this comment to see the full error message
     canonicalLink() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'canonicalLink_' does not exist on type '... Remove this comment to see the full error message
-      return this.canonicalLink_ != null ? this.canonicalLink_ : (this.canonicalLink_ = extractor.canonicalLink(doc))
+      const doc = getParsedDoc(html)
+      return canonicalLink_ != null ? canonicalLink_ : (canonicalLink_ = extractor.canonicalLink(doc))
     },
 
     tags() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'tags_' does not exist on type '{ title()... Remove this comment to see the full error message
-      return this.tags_ != null ? this.tags_ : (this.tags_ = extractor.tags(doc))
+      const doc = getParsedDoc(html)
+      return tags_ != null ? tags_ : (tags_ = extractor.tags(doc))
     },
 
     image() {
-      const doc = getParsedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'image_' does not exist on type '{ title(... Remove this comment to see the full error message
-      return this.image_ != null ? this.image_ : (this.image_ = extractor.image(doc))
+      const doc = getParsedDoc(html)
+      return image_ != null ? image_ : (image_ = extractor.image(doc))
     },
 
     videos() {
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'videos_' does not exist on type '{ title... Remove this comment to see the full error message
-      if (this.videos_ != null) {
-        return this.videos_
+      if (videos_ != null) {
+        return videos_
       }
-      const doc = getCleanedDoc.call(this, html)
-      const topNode = getTopNode.call(this, doc, this.lang())
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'videos_' does not exist on type '{ title... Remove this comment to see the full error message
-      return (this.videos_ = extractor.videos(doc, topNode))
+      const doc = getCleanedDoc(html)
+      const topNode = getTopNode(doc, this.lang() ?? 'en')
+      return (videos_ = extractor.videos(doc, topNode))
     },
 
     text() {
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'text_' does not exist on type '{ title()... Remove this comment to see the full error message
-      if (this.text_ != null) {
-        return this.text_
+      if (text_ != null) {
+        return text_
       }
-      const doc = getCleanedDoc.call(this, html)
-      const topNode = getTopNode.call(this, doc, this.lang())
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'text_' does not exist on type '{ title()... Remove this comment to see the full error message
-      return (this.text_ = extractor.text(doc, topNode, this.lang()))
+      const doc = getCleanedDoc(html)
+      const topNode = getTopNode(doc, this.lang() ?? 'en')
+      return (text_ = extractor.text(doc, topNode, this.lang() ?? 'en'))
     },
-
-    // @ts-expect-error ts-migrate(7023) FIXME: 'links' implicitly has return type 'any' because i... Remove this comment to see the full error message
     links() {
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'links_' does not exist on type '{ title(... Remove this comment to see the full error message
-      if (this.links_ != null) {
-        return this.links_
+      if (links_ != null) {
+        return links_
       }
-      const doc = getCleanedDoc.call(this, html)
-      // @ts-expect-error ts-migrate(7022) FIXME: 'topNode' implicitly has type 'any' because it doe... Remove this comment to see the full error message
-      const topNode = getTopNode.call(this, doc, this.lang())
-      // @ts-expect-error ts-migrate(2551) FIXME: Property 'links_' does not exist on type '{ title(... Remove this comment to see the full error message
-      return (this.links_ = extractor.links(doc, topNode, this.lang()))
+      const doc = getCleanedDoc(html)
+      const topNode = getTopNode(doc, this.lang() ?? 'en')
+      return (links_ = extractor.links(doc, topNode, this.lang() ?? 'en'))
     },
   }
-}
-
-// Load the doc in cheerio and cache it
-var getParsedDoc = function (html: any) {
-  // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-  return this.doc_ != null ? this.doc_ : (this.doc_ = cheerio.load(html))
-}
-
-// Cached version of calculateBestNode
-var getTopNode = function (doc: any, lng: any) {
-  // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-  return this.topNode_ != null ? this.topNode_ : (this.topNode_ = extractor.calculateBestNode(doc, lng))
-}
-
-// Cached version of the cleaned doc
-var getCleanedDoc = function (html: any) {
-  // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-  if (this.cleanedDoc_ != null) {
-    return this.cleanedDoc_
-  }
-  // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-  const doc = getParsedDoc.call(this, html)
-  // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-  this.cleanedDoc_ = cleaner(doc)
-  // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-  return this.cleanedDoc_
 }

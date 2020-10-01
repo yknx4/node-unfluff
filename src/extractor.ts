@@ -2,17 +2,18 @@
  * decaffeinate suggestions:
  * DS102: Remove unnecessary code created because of implicit returns
  * DS103: Rewrite code to no longer use __guard__, or convert again using --optional-chaining
- * DS207: Consider shorter variations of null checks
+ * DS207: Consider shorter letiations of null checks
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import each from 'lodash/each'
 import uniq from 'lodash/uniq'
 import stopwords from './stopwords'
 import formatter from './formatter'
+import { csLegacyGuard } from './__guard__'
 
 export default {
   // Grab the date of an html doc
-  date(doc: any) {
+  date(doc: cheerio.Root) {
     const dateCandidates = doc(`meta[property='article:published_time'], \
 meta[itemprop*='datePublished'], meta[name='dcterms.modified'], \
 meta[name='dcterms.date'], \
@@ -36,30 +37,21 @@ time, \
 span[class*='date'], \
 p[class*='date'], \
 div[class*='date']`)
-    return (
-      __guard__(
-        cleanNull(
-          __guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x1: any) => x1.attr('content')),
-        ),
-        (x: any) => x.trim(),
-      ) ||
-      __guard__(
-        cleanNull(
-          __guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x3: any) => x3.attr('datetime')),
-        ),
-        (x2: any) => x2.trim(),
-      ) ||
-      cleanText(__guard__(dateCandidates != null ? dateCandidates.first() : undefined, (x4: any) => x4.text())) ||
-      null
-    )
+
+    const firstCandidate = dateCandidates.first()
+    const firstResult = firstCandidate.attr('content') ?? firstCandidate.attr('datetime') ?? firstCandidate.text()
+    return firstResult.trim()
   },
 
   // Grab the copyright line
-  copyright(doc: any) {
+  copyright(doc: cheerio.Root) {
     const copyrightCandidates = doc(`p[class*='copyright'], div[class*='copyright'], span[class*='copyright'], li[class*='copyright'], \
 p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyright']`)
-    let text = __guard__(copyrightCandidates != null ? copyrightCandidates.first() : undefined, (x: any) => x.text())
-    if (!text) {
+    let text = csLegacyGuard(
+      copyrightCandidates != null ? copyrightCandidates.first() : undefined,
+      (x: cheerio.Cheerio) => x.text(),
+    )
+    if (text === undefined) {
       // try to find the copyright in the text
       text = doc('body')
         .text()
@@ -73,7 +65,7 @@ p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyrig
   },
 
   // Grab the author of an html doc
-  author(doc: any) {
+  author(doc: cheerio.Root) {
     const authorCandidates = doc(`meta[property='article:author'], \
 meta[property='og:article:author'], meta[name='author'], \
 meta[name='dcterms.creator'], \
@@ -81,24 +73,23 @@ meta[name='DC.creator'], \
 meta[name='DC.Creator'], \
 meta[name='dc.creator'], \
 meta[name='creator']`)
-    const authorList = []
-    authorCandidates.each(function () {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const author = __guard__(cleanNull(__guard__(doc(this), (x1: any) => x1.attr('content'))), (x: any) => x.trim())
-      if (author) {
-        return authorList.push(author)
+    const authorList: string[] = []
+    authorCandidates.each(function (_, e) {
+      const author = doc(e).attr('content')
+      if (author !== undefined) {
+        return authorList.push(author.trim())
       }
     })
     // fallback to a named author div
     if (authorList.length === 0) {
       const fallbackAuthor =
-        __guard__(doc("span[class*='author']").first(), (x: any) => x.text()) ||
-        __guard__(doc("p[class*='author']").first(), (x1: any) => x1.text()) ||
-        __guard__(doc("div[class*='author']").first(), (x2: any) => x2.text()) ||
-        __guard__(doc("span[class*='byline']").first(), (x3: any) => x3.text()) ||
-        __guard__(doc("p[class*='byline']").first(), (x4: any) => x4.text()) ||
-        __guard__(doc("div[class*='byline']").first(), (x5: any) => x5.text())
-      if (fallbackAuthor) {
+        csLegacyGuard(doc("span[class*='author']").first(), (x: cheerio.Cheerio) => x.text()) ??
+        csLegacyGuard(doc("p[class*='author']").first(), (x1: cheerio.Cheerio) => x1.text()) ??
+        csLegacyGuard(doc("div[class*='author']").first(), (x2: cheerio.Cheerio) => x2.text()) ??
+        csLegacyGuard(doc("span[class*='byline']").first(), (x3: cheerio.Cheerio) => x3.text()) ??
+        csLegacyGuard(doc("p[class*='byline']").first(), (x4: cheerio.Cheerio) => x4.text()) ??
+        csLegacyGuard(doc("div[class*='byline']").first(), (x5: cheerio.Cheerio) => x5.text())
+      if (fallbackAuthor != null) {
         authorList.push(cleanText(fallbackAuthor))
       }
     }
@@ -107,40 +98,33 @@ meta[name='creator']`)
   },
 
   // Grab the publisher of the page/site
-  publisher(doc: any) {
+  publisher(doc: cheerio.Root) {
     const publisherCandidates = doc(`meta[property='og:site_name'], \
 meta[itemprop=name], \
 meta[name='dc.publisher'], \
 meta[name='DC.publisher'], \
 meta[name='DC.Publisher']`)
-    return (
-      __guard__(
-        cleanNull(
-          __guard__(publisherCandidates != null ? publisherCandidates.first() : undefined, (x1: any) =>
-            x1.attr('content'),
-          ),
-        ),
-        (x: any) => x.trim(),
-      ) || null
-    )
+    const firstCandidate = publisherCandidates.first()
+    const candidateStr = firstCandidate.attr('content')
+    return candidateStr != null ? candidateStr.trim() : null
   },
 
   // Grab the title of an html doc (excluding junk)
   // Hard-truncates titles containing colon or spaced dash
-  title(doc: any) {
+  title(doc: cheerio.Root) {
     const titleText = rawTitle(doc)
     return cleanTitle(titleText, ['|', ' - ', '»', ':'])
   },
 
   // Grab the title with soft truncation
-  softTitle(doc: any) {
+  softTitle(doc: cheerio.Root) {
     const titleText = rawTitle(doc)
     return cleanTitle(titleText, ['|', ' - ', '»'])
   },
 
   // Grab the 'main' text chunk
-  text(doc: any, topNode: any, lang: any) {
-    if (topNode) {
+  text(doc: cheerio.Root, topNode: cheerio.Cheerio | null | undefined, lang: 'es' | 'en') {
+    if (topNode != null) {
       topNode = postCleanup(doc, topNode, lang)
       return formatter(doc, topNode, lang)
     } else {
@@ -149,7 +133,7 @@ meta[name='DC.Publisher']`)
   },
 
   // Grab an image for the page
-  image(doc: any) {
+  image(doc: cheerio.Root) {
     const images = doc(`meta[property='og:image'], \
 meta[property='og:image:url'], \
 meta[itemprop=image], \
@@ -157,24 +141,23 @@ meta[name='twitter:image:src'], \
 meta[name='twitter:image'], \
 meta[name='twitter:image0']`)
 
-    if (images.length > 0 && cleanNull(images.first().attr('content'))) {
-      return cleanNull(images.first().attr('content'))
+    if (images.length > 0) {
+      return images.first().attr('content')
     }
 
     return null
   },
 
   // Find any links in the doc
-  links(doc: any, topNode: any, lang: any) {
-    const links: any = []
-    const gatherLinks = function (doc: any, topNode: any) {
+  links(doc: cheerio.Root, topNode: cheerio.Cheerio, lang: 'es' | 'en') {
+    const links: Array<{ text: string; href: any }> = []
+    const gatherLinks = function (doc: cheerio.Root, topNode: cheerio.Cheerio) {
       const nodes = topNode.find('a')
-      return nodes.each(function () {
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const href = doc(this).attr('href')
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const text = doc(this).html()
-        if (href && text) {
+      return nodes.each(function (_, e) {
+        const href = doc(e).attr('href')
+
+        const text = doc(e).html()
+        if (href != null && text != null) {
           return links.push({
             text,
             href,
@@ -183,7 +166,7 @@ meta[name='twitter:image0']`)
       })
     }
 
-    if (topNode) {
+    if (topNode != null) {
       topNode = postCleanup(doc, topNode, lang)
       gatherLinks(doc, topNode)
     }
@@ -191,17 +174,20 @@ meta[name='twitter:image0']`)
   },
 
   // Find any embedded videos in the doc
-  videos(doc: any, topNode: any) {
-    const videoList: any = []
+  videos(doc: cheerio.Root, topNode: cheerio.Cheerio) {
+    const videoList: Array<{
+      src: string | undefined
+      height: string | undefined
+      width: string | undefined
+    } | null> = []
     const candidates = doc(topNode).find('iframe, embed, object, video')
 
-    candidates.each(function () {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const candidate = doc(this)
+    candidates.each(function (_, e) {
+      const candidate = doc(e)
       const tag = candidate[0].name
 
       if (tag === 'embed') {
-        if (candidate.parent() && candidate.parent()[0].name === 'object') {
+        if (candidate.parent() != null && candidate.parent()[0].name === 'object') {
           return videoList.push(getObjectTag(doc, candidate))
         } else {
           return videoList.push(getVideoAttrs(doc, candidate))
@@ -214,11 +200,18 @@ meta[name='twitter:image0']`)
     })
 
     // Filter out junky or duplicate videos
-    const urls: any = []
-    const results: any = []
-    each(videoList, function (vid: any) {
-      if (vid && vid.height && vid.width && urls.indexOf(vid.src) === -1) {
-        results.push(vid)
+    const urls: string[] = []
+    const results: Array<{ src: string; height: string; width: string }> = []
+    each(videoList, function (vid) {
+      // eslint-disable-next-line @typescript-eslint/prefer-optional-chain
+      if (vid != null && vid.height != null && vid.width != null && vid.src != null && !urls.includes(vid.src)) {
+        results.push(
+          vid as {
+            src: string
+            height: string
+            width: string
+          },
+        )
         return urls.push(vid.src)
       }
     })
@@ -227,30 +220,29 @@ meta[name='twitter:image0']`)
   },
 
   // Grab the favicon from an html doc
-  favicon(doc: any) {
-    const tag = doc('link').filter(function () {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      return __guard__(doc(this).attr('rel'), (x: any) => x.toLowerCase()) === 'shortcut icon'
+  favicon(doc: cheerio.Root) {
+    const tag = doc('link').filter(function (_, e) {
+      return csLegacyGuard(doc(e).attr('rel'), (x: string) => x.toLowerCase()) === 'shortcut icon'
     })
     return tag.attr('href')
   },
 
   // Determine the language of an html doc
-  lang(doc: any) {
+  lang(doc: cheerio.Root): 'es' | 'en' | null {
     // Check the <html> tag
-    let l = __guard__(doc('html'), (x: any) => x.attr('lang'))
+    let l = csLegacyGuard(doc('html'), (x: cheerio.Cheerio) => x.attr('lang'))
 
-    if (!l) {
+    if (l == null) {
       // Otherwise look up for a content-language in meta
-      const tag = doc('meta[name=lang]') || doc('meta[http-equiv=content-language]')
+      const tag = doc('meta[name=lang]') ?? doc('meta[http-equiv=content-language]')
       l = tag != null ? tag.attr('content') : undefined
     }
 
-    if (l) {
+    if (l != null) {
       // Just return the 2 letter ISO language code with no country
       const value = l.slice(0, 2)
       if (/^[A-Za-z]{2}$/.test(value)) {
-        return value.toLowerCase()
+        return value.toLowerCase() as 'en' | 'es'
       }
     }
 
@@ -258,28 +250,27 @@ meta[name='twitter:image0']`)
   },
 
   // Get the meta description of an html doc
-  description(doc: any) {
+  description(doc: cheerio.Root) {
     const tag = doc("meta[name=description], meta[property='og:description']")
-    return __guard__(
-      cleanNull(__guard__(tag != null ? tag.first() : undefined, (x1: any) => x1.attr('content'))),
-      (x: any) => x.trim(),
-    )
+    const firstTag = tag.first()
+    const tagContent = firstTag.attr('content')
+    return tagContent != null ? tagContent.trim() : undefined
   },
 
   // Get the meta keywords of an html doc
-  keywords(doc: any) {
+  keywords(doc: cheerio.Root) {
     const tag = doc('meta[name=keywords]')
-    return cleanNull(tag != null ? tag.attr('content') : undefined)
+    return tag.attr('content')
   },
 
   // Get the canonical link of an html doc
-  canonicalLink(doc: any) {
+  canonicalLink(doc: cheerio.Root) {
     const tag = doc('link[rel=canonical]')
-    return cleanNull(tag != null ? tag.attr('href') : undefined)
+    return tag.attr('href')
   },
 
   // Get any tags or keywords from an html doc
-  tags(doc: any) {
+  tags(doc: cheerio.Root) {
     let elements = doc("a[rel='tag']")
 
     if (elements.length === 0) {
@@ -289,15 +280,14 @@ meta[name='twitter:image0']`)
       }
     }
 
-    const tags: any = []
-    elements.each(function () {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const el = doc(this)
+    const tags: string[] = []
+    elements.each(function (_, e) {
+      const el = doc(e)
 
       const tag = el.text().trim()
       tag.replace(/[\s\t\n]+/g, '')
 
-      if (tag && tag.length > 0) {
+      if (tag.length > 0) {
         return tags.push(tag)
       }
     })
@@ -306,20 +296,19 @@ meta[name='twitter:image0']`)
   },
 
   // Walk the document's text nodes and find the most 'texty' node in the doc
-  calculateBestNode(doc: any, lang: any) {
-    let topNode: any = null
+  calculateBestNode(doc: cheerio.Root, lang: 'es' | 'en') {
+    let topNode: cheerio.Cheerio | null = null
     const nodesToCheck = doc('p, pre, td')
 
     let startingBoost = 1.0
     let cnt = 0
     let i = 0
-    const parentNodes: any = []
-    const nodesWithText: any = []
+    const parentNodes: cheerio.Element[] = []
+    const nodesWithText: cheerio.Cheerio[] = []
 
     // Walk all the p, pre and td nodes
-    nodesToCheck.each(function () {
-      // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-      const node = doc(this)
+    nodesToCheck.each(function (_, e) {
+      const node = doc(e)
 
       const textNode = node.text()
       const wordStats = stopwords(textNode, lang)
@@ -337,7 +326,7 @@ meta[name='twitter:image0']`)
     const bottomNegativescoreNodes = nodesNumber * 0.25
 
     // Walk all the potentially 'texty' nodes
-    each(nodesWithText, function (node: any) {
+    each(nodesWithText, function (node) {
       let boostScore = 0.0
 
       // If this node has nearby nodes that contain
@@ -372,17 +361,17 @@ meta[name='twitter:image0']`)
       updateScore(parentNode, upscore)
       updateNodeCount(parentNode, 1)
 
-      if (parentNodes.indexOf(parentNode[0]) === -1) {
+      if (!parentNodes.includes(parentNode[0])) {
         parentNodes.push(parentNode[0])
       }
 
       const parentParentNode = parentNode.parent()
 
-      if (parentParentNode) {
+      if (parentParentNode != null) {
         updateNodeCount(parentParentNode, 1)
         updateScore(parentParentNode, upscore / 2)
 
-        if (parentNodes.indexOf(parentParentNode[0]) === -1) {
+        if (!parentNodes.includes(parentParentNode[0])) {
           parentNodes.push(parentParentNode[0])
         }
       }
@@ -413,7 +402,7 @@ meta[name='twitter:image0']`)
   },
 }
 
-var getVideoAttrs = function (doc: any, node: any) {
+const getVideoAttrs = function (doc: cheerio.Root, node: any) {
   let data
   const el = doc(node)
   return (data = {
@@ -423,7 +412,7 @@ var getVideoAttrs = function (doc: any, node: any) {
   })
 }
 
-var getObjectTag = function (doc: any, node: any) {
+const getObjectTag = function (doc: cheerio.Root, node: cheerio.Cheerio) {
   const srcNode = node.find('param[name=movie]')
   if (!(srcNode.length > 0)) {
     return null
@@ -436,14 +425,14 @@ var getObjectTag = function (doc: any, node: any) {
 }
 
 // Find the biggest chunk of text in the title
-const biggestTitleChunk = function (title: any, splitter: any) {
+const biggestTitleChunk = function (title: string, splitter: string) {
   let largeTextLength = 0
   let largeTextIndex = 0
 
   const titlePieces = title.split(splitter)
 
   // find the largest substring
-  each(titlePieces, function (piece: any, i: any) {
+  each(titlePieces, function (piece, i) {
     if (piece.length > largeTextLength) {
       largeTextLength = piece.length
       return (largeTextIndex = i)
@@ -456,7 +445,7 @@ const biggestTitleChunk = function (title: any, splitter: any) {
 // Given a text node, check all previous siblings.
 // If the sibling node looks 'texty' and isn't too many
 // nodes away, it's probably some yummy text
-var isBoostable = function (doc: any, node: any, lang: any) {
+const isBoostable = function (doc: cheerio.Root, node: cheerio.Cheerio, lang: 'es' | 'en') {
   let stepsAway = 0
   const minimumStopwordCount = 5
   const maxStepsawayFromNode = 3
@@ -465,9 +454,8 @@ var isBoostable = function (doc: any, node: any, lang: any) {
 
   let boostable = false
 
-  nodes.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const currentNode = doc(this)
+  nodes.each(function (_, e) {
+    const currentNode = doc(e)
     const currentNodeTag = currentNode[0].name
 
     if (currentNodeTag === 'p') {
@@ -493,20 +481,25 @@ var isBoostable = function (doc: any, node: any, lang: any) {
   return boostable
 }
 
-const addSiblings = function (doc: any, topNode: any, lang: any) {
+const addSiblings = function (doc: cheerio.Root, topNode: cheerio.Cheerio, lang: 'es' | 'en') {
   const baselinescoreSiblingsPara = getSiblingsScore(doc, topNode, lang)
   const sibs = topNode.prevAll()
 
-  sibs.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const currentNode = doc(this)
+  sibs.each(function (_, e) {
+    const currentNode = doc(e)
     const ps = getSiblingsContent(doc, lang, currentNode, baselinescoreSiblingsPara)
-    return each(ps, (p: any) => topNode.prepend(`<p>${p}</p>`))
+    // eslint-disable-next-line @typescript-eslint/restrict-template-expressions,@typescript-eslint/no-base-to-string
+    return each(ps, (p) => topNode.prepend(`<p>${p}</p>`))
   })
   return topNode
 }
 
-var getSiblingsContent = function (doc: any, lang: any, currentSibling: any, baselinescoreSiblingsPara: any) {
+const getSiblingsContent = function (
+  doc: cheerio.Root,
+  lang: 'es' | 'en',
+  currentSibling: cheerio.Cheerio,
+  baselinescoreSiblingsPara: number,
+) {
   if (currentSibling[0].name === 'p' && currentSibling.text().length > 0) {
     return [currentSibling]
   } else {
@@ -514,10 +507,9 @@ var getSiblingsContent = function (doc: any, lang: any, currentSibling: any, bas
     if (potentialParagraphs === null) {
       return null
     } else {
-      const ps: any = []
-      potentialParagraphs.each(function () {
-        // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-        const firstParagraph = doc(this)
+      const ps: string[] = []
+      potentialParagraphs.each(function (_, e) {
+        const firstParagraph = doc(e)
         const txt = firstParagraph.text()
 
         if (txt.length > 0) {
@@ -538,15 +530,14 @@ var getSiblingsContent = function (doc: any, lang: any, currentSibling: any, bas
   }
 }
 
-var getSiblingsScore = function (doc: any, topNode: any, lang: any) {
+const getSiblingsScore = function (doc: cheerio.Root, topNode: cheerio.Cheerio, lang: 'es' | 'en') {
   let base = 100000
   let paragraphsNumber = 0
   let paragraphsScore = 0
   const nodesToCheck = topNode.find('p')
 
-  nodesToCheck.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const node = doc(this)
+  nodesToCheck.each(function (_, e) {
+    const node = doc(e)
     const textNode = node.text()
     const wordStats = stopwords(textNode, lang)
     const highLinkDensity = isHighlinkDensity(doc, node)
@@ -565,33 +556,33 @@ var getSiblingsScore = function (doc: any, topNode: any, lang: any) {
 }
 
 // Keep track of a node's score with a gravityScore attribute
-var updateScore = function (node: any, addToScore: any) {
+const updateScore = function (node: cheerio.Cheerio, addToScore: number) {
   let currentScore = 0
   const scoreString = node.attr('gravityScore')
-  if (scoreString) {
+  if (scoreString !== undefined) {
     currentScore = parseInt(scoreString)
   }
 
   const newScore = currentScore + addToScore
-  return node.attr('gravityScore', newScore)
+  return node.attr('gravityScore', newScore.toString())
 }
 
 // Keep track of # of 'texty' child nodes under this node with
 // graveityNodes attribute
-var updateNodeCount = function (node: any, addToCount: any) {
+const updateNodeCount = function (node: cheerio.Cheerio, addToCount: number) {
   let currentScore = 0
   const countString = node.attr('gravityNodes')
-  if (countString) {
+  if (countString !== undefined) {
     currentScore = parseInt(countString)
   }
 
   const newScore = currentScore + addToCount
-  return node.attr('gravityNodes', newScore)
+  return node.attr('gravityNodes', newScore.toString())
 }
 
 // Check the ratio of links to words in a node.
 // If the ratio is high, this node is probably trash.
-var isHighlinkDensity = function (doc: any, node: any) {
+const isHighlinkDensity = function (doc: cheerio.Root, node: cheerio.Cheerio) {
   const links = node.find('a')
   if (!(links.length > 0)) {
     return false
@@ -602,9 +593,8 @@ var isHighlinkDensity = function (doc: any, node: any) {
   const numberOfWords = words.length
 
   const sb: any = []
-  links.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    return sb.push(doc(this).text())
+  links.each(function (_, e) {
+    return sb.push(doc(e).text())
   })
 
   const linkText = sb.join(' ')
@@ -618,21 +608,20 @@ var isHighlinkDensity = function (doc: any, node: any) {
 }
 
 // Return a node's gravity score (amount of texty-ness under it)
-var getScore = function (node: any) {
+const getScore = function (node: cheerio.Cheerio) {
   const grvScoreString = node.attr('gravityScore')
-  if (!grvScoreString) {
+  if (grvScoreString === undefined) {
     return 0
   } else {
     return parseInt(grvScoreString)
   }
 }
 
-const isTableAndNoParaExist = function (doc: any, e: any) {
+const isTableAndNoParaExist = function (doc: cheerio.Root, e: any) {
   const subParagraphs = e.find('p')
 
-  subParagraphs.each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const p = doc(this)
+  subParagraphs.each(function (_: any, e: any) {
+    const p = doc(e)
     const txt = p.text()
 
     if (txt.length < 25) {
@@ -648,7 +637,7 @@ const isTableAndNoParaExist = function (doc: any, e: any) {
   }
 }
 
-const isNodescoreThresholdMet = function (doc: any, node: any, e: any) {
+const isNodescoreThresholdMet = function (doc: cheerio.Root, node: any, e: any) {
   const topNodeScore = getScore(node)
   const currentNodeScore = getScore(e)
   const thresholdScore = topNodeScore * 0.08
@@ -661,12 +650,11 @@ const isNodescoreThresholdMet = function (doc: any, node: any, e: any) {
 }
 
 // Remove any remaining trash nodes (clusters of nodes with little/no content)
-var postCleanup = function (doc: any, targetNode: any, lang: any) {
+const postCleanup = function (doc: cheerio.Root, targetNode: any, lang: 'es' | 'en') {
   const node = addSiblings(doc, targetNode, lang)
 
-  node.children().each(function () {
-    // @ts-expect-error ts-migrate(2683) FIXME: 'this' implicitly has type 'any' because it does n... Remove this comment to see the full error message
-    const e = doc(this)
+  node.children().each(function (_, el) {
+    const e = doc(el)
     const eTag = e[0].name
     if (!['p', 'a'].includes(eTag)) {
       if (isHighlinkDensity(doc, e) || isTableAndNoParaExist(doc, e) || !isNodescoreThresholdMet(doc, node, e)) {
@@ -677,11 +665,16 @@ var postCleanup = function (doc: any, targetNode: any, lang: any) {
 
   return node
 }
+function cleanNull(text: string): string
+function cleanNull(text: null | undefined): undefined
+function cleanNull(text: string | null | undefined) {
+  return text != null ? text.replace(/^null$/g, '') : undefined
+}
 
-var cleanNull = (text: any) => (text != null ? text.replace(/^null$/g, '') : undefined)
-
-var cleanText = (text: any) =>
-  text != null
+function cleanText(text: string): string
+function cleanText(text: null | undefined): undefined
+function cleanText(text: any) {
+  return typeof text === 'string'
     ? text
         .replace(/[\r\n\t]/g, ' ')
         .replace(/\s\s+/g, ' ')
@@ -689,12 +682,13 @@ var cleanText = (text: any) =>
         .replace(/�/g, '')
         .trim()
     : undefined
+}
 
-var cleanTitle = function (title: any, delimiters: any) {
-  let titleText = title || ''
+const cleanTitle = function (title: string | null | undefined, delimiters: string[]) {
+  let titleText = title ?? ''
   let usedDelimeter = false
   each(delimiters, function (c: any) {
-    if (titleText.indexOf(c) >= 0 && !usedDelimeter) {
+    if (titleText.includes(c) && !usedDelimeter) {
       titleText = biggestTitleChunk(titleText, c)
       return (usedDelimeter = true)
     }
@@ -702,35 +696,35 @@ var cleanTitle = function (title: any, delimiters: any) {
   return cleanText(titleText)
 }
 
-var rawTitle = function (doc: any) {
+const rawTitle = function (doc: cheerio.Root) {
   let gotTitle = false
   let titleText = ''
   // The first h1 or h2 is a useful fallback
   each(
     [
-      __guard__(
-        __guard__(doc("meta[property='og:title']"), (x1: any) => x1.first()),
-        (x: any) => x.attr('content'),
+      csLegacyGuard(
+        csLegacyGuard(doc("meta[property='og:title']"), (x1: cheerio.Cheerio) => x1.first()),
+        (x: cheerio.Cheerio) => x.attr('content'),
       ),
-      __guard__(
-        __guard__(doc("h1[class*='title']"), (x3: any) => x3.first()),
-        (x2: any) => x2.text(),
+      csLegacyGuard(
+        csLegacyGuard(doc("h1[class*='title']"), (x3: cheerio.Cheerio) => x3.first()),
+        (x2: cheerio.Cheerio) => x2.text(),
       ),
-      __guard__(
-        __guard__(doc('title'), (x5: any) => x5.first()),
-        (x4: any) => x4.text(),
+      csLegacyGuard(
+        csLegacyGuard(doc('title'), (x5: cheerio.Cheerio) => x5.first()),
+        (x4: cheerio.Cheerio) => x4.text(),
       ),
-      __guard__(
-        __guard__(doc('h1'), (x7: any) => x7.first()),
-        (x6: any) => x6.text(),
+      csLegacyGuard(
+        csLegacyGuard(doc('h1'), (x7: cheerio.Cheerio) => x7.first()),
+        (x6: cheerio.Cheerio) => x6.text(),
       ),
-      __guard__(
-        __guard__(doc('h2'), (x9: any) => x9.first()),
-        (x8: any) => x8.text(),
+      csLegacyGuard(
+        csLegacyGuard(doc('h2'), (x9: cheerio.Cheerio) => x9.first()),
+        (x8: cheerio.Cheerio) => x8.text(),
       ),
     ],
-    function (candidate: any) {
-      if (candidate && candidate.trim() && !gotTitle) {
+    function (candidate: string | undefined) {
+      if (candidate !== undefined && !gotTitle) {
         titleText = candidate.trim()
         return (gotTitle = true)
       }
