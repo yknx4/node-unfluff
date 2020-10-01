@@ -35,9 +35,12 @@
     "lodash": "^4.17.20"
   },
   "devDependencies": {
+    "@types/chai": "^4.2.12",
     "@types/cheerio": "^0.22.22",
     "@types/lodash": "^4.14.161",
+    "@types/mocha": "^8.0.3",
     "@typescript-eslint/eslint-plugin": "4",
+    "chai": "^4.2.0",
     "commonjs-everywhere": "0.9.x",
     "deep-equal": "~0.2.1",
     "eslint": "7",
@@ -52,11 +55,13 @@
     "prettier": "^2.1.2",
     "scopedfs": "~0.1.0",
     "semver": "~4.3.2",
-    "ts-migrate": "^0.1.7"
+    "ts-migrate": "^0.1.7",
+    "ts-node": "^9.0.0"
   },
   "scripts": {
     "build": "npx rimraf lib && cp -rf src lib",
-    "test": "npx mocha -u tdd -r test-setup.js"
+    "test": "npx mocha -u tdd -r test-setup.js", 
+    "test-ts": "TS_NODE_PROJECT=tsconfig.test.json env TS_NODE_COMPILER_OPTIONS='{\"module\": \"commonjs\" }' mocha -u tdd -r test-setup.js -r ts-node/register -r test/global.ts"
   },
   "licenses": [
     {

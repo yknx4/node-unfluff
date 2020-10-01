@@ -8,9 +8,8 @@ import cheerio from 'cheerio'
 import extractor from './extractor'
 import cleaner from './cleaner'
 import { Link, Video } from './definitions'
-let unfluff
 
-module.exports = unfluff = function (html: string, language?: 'es' | 'en') {
+export default function unfluff(html: string, language?: 'es' | 'en') {
   const doc = cheerio.load(html)
   const lng: 'es' | 'en' = language ?? (extractor.lang(doc) as 'en' | 'es') ?? 'en'
 
@@ -28,6 +27,9 @@ module.exports = unfluff = function (html: string, language?: 'es' | 'en') {
     canonicalLink: extractor.canonicalLink(doc),
     tags: extractor.tags(doc),
     image: extractor.image(doc),
+    videos: [],
+    links: [],
+    text: '',
   }
 
   // Step 1: Clean the doc
@@ -37,18 +39,14 @@ module.exports = unfluff = function (html: string, language?: 'es' | 'en') {
   const topNode = extractor.calculateBestNode(doc, lng)
 
   // Step 3: Extract text, videos, images, links
-  // @ts-expect-error ts-migrate(2339) FIXME: Property 'videos' does not exist on type '{ title:... Remove this comment to see the full error message
   pageData.videos = extractor.videos(doc, topNode)
-  // @ts-expect-error ts-migrate(2339) FIXME: Property 'links' does not exist on type '{ title: ... Remove this comment to see the full error message
   pageData.links = extractor.links(doc, topNode, lng)
-  // @ts-expect-error ts-migrate(2339) FIXME: Property 'text' does not exist on type '{ title: a... Remove this comment to see the full error message
   pageData.text = extractor.text(doc, topNode, lng)
 
   return pageData
 }
 
 // Allow access to document properties with lazy evaluation
-// @ts-expect-error ts-migrate(2339) FIXME: Property 'lazy' does not exist on type '(html: any... Remove this comment to see the full error message
 unfluff.lazy = function (html: string, language?: 'es' | 'en') {
   let _parsedDoc: cheerio.Root | null = null
   let _cleanedDoc: cheerio.Root | null = null

@@ -40,18 +40,19 @@ div[class*='date']`)
 
     const firstCandidate = dateCandidates.first()
     const firstResult = firstCandidate.attr('content') ?? firstCandidate.attr('datetime') ?? firstCandidate.text()
-    return firstResult.trim()
+    return cleanNull(firstResult.trim())
   },
 
   // Grab the copyright line
   copyright(doc: cheerio.Root) {
     const copyrightCandidates = doc(`p[class*='copyright'], div[class*='copyright'], span[class*='copyright'], li[class*='copyright'], \
 p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyright']`)
-    let text = csLegacyGuard(
-      copyrightCandidates != null ? copyrightCandidates.first() : undefined,
-      (x: cheerio.Cheerio) => x.text(),
+    let text = cleanNull(
+      csLegacyGuard(copyrightCandidates != null ? copyrightCandidates.first() : undefined, (x: cheerio.Cheerio) =>
+        x.text(),
+      ),
     )
-    if (text === undefined) {
+    if (text == null) {
       // try to find the copyright in the text
       text = doc('body')
         .text()
@@ -61,7 +62,7 @@ p[id*='copyright'], div[id*='copyright'], span[id*='copyright'], li[id*='copyrig
       }
     }
     const copyright = text.replace(/.*?©(\s*copyright)?([^,;:.|\r\n]+).*/gi, '$2').trim()
-    return cleanText(copyright)
+    return cleanNull(cleanText(copyright))
   },
 
   // Grab the author of an html doc
@@ -73,11 +74,11 @@ meta[name='DC.creator'], \
 meta[name='DC.Creator'], \
 meta[name='dc.creator'], \
 meta[name='creator']`)
-    const authorList: string[] = []
+    const authorList: Array<string | null> = []
     authorCandidates.each(function (_, e) {
       const author = doc(e).attr('content')
       if (author !== undefined) {
-        return authorList.push(author.trim())
+        return authorList.push(cleanNull(author.trim()))
       }
     })
     // fallback to a named author div
@@ -90,11 +91,11 @@ meta[name='creator']`)
         csLegacyGuard(doc("p[class*='byline']").first(), (x4: cheerio.Cheerio) => x4.text()) ??
         csLegacyGuard(doc("div[class*='byline']").first(), (x5: cheerio.Cheerio) => x5.text())
       if (fallbackAuthor != null) {
-        authorList.push(cleanText(fallbackAuthor))
+        authorList.push(cleanNull(cleanText(fallbackAuthor)))
       }
     }
 
-    return authorList
+    return authorList.filter((a) => a != null) as string[]
   },
 
   // Grab the publisher of the page/site
@@ -106,7 +107,7 @@ meta[name='DC.publisher'], \
 meta[name='DC.Publisher']`)
     const firstCandidate = publisherCandidates.first()
     const candidateStr = firstCandidate.attr('content')
-    return candidateStr != null ? candidateStr.trim() : null
+    return cleanNull(candidateStr != null ? candidateStr.trim() : null)
   },
 
   // Grab the title of an html doc (excluding junk)
@@ -142,7 +143,7 @@ meta[name='twitter:image'], \
 meta[name='twitter:image0']`)
 
     if (images.length > 0) {
-      return images.first().attr('content')
+      return cleanNull(images.first().attr('content'))
     }
 
     return null
@@ -665,10 +666,9 @@ const postCleanup = function (doc: cheerio.Root, targetNode: any, lang: 'es' | '
 
   return node
 }
-function cleanNull(text: string): string
-function cleanNull(text: null | undefined): undefined
+
 function cleanNull(text: string | null | undefined) {
-  return text != null ? text.replace(/^null$/g, '') : undefined
+  return text != null && text !== 'null' && text !== '' ? text : null
 }
 
 function cleanText(text: string): string
@@ -725,8 +725,11 @@ const rawTitle = function (doc: cheerio.Root) {
     ],
     function (candidate: string | undefined) {
       if (candidate !== undefined && !gotTitle) {
-        titleText = candidate.trim()
-        return (gotTitle = true)
+        const preTitle = cleanNull(candidate.trim())
+        if (preTitle != null) {
+          titleText = preTitle
+          return (gotTitle = true)
+        }
       }
     },
   )

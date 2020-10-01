@@ -100,7 +100,10 @@ function convertToText(doc: cheerio.Root, topNode: cheerio.Cheerio) {
   // This supports multiple languages words using XRegExp to generate the
   // regex that matches wranges of unicode characters used in words.
   const regex = /[\d\w]/gu
-  txts = filter(txts, (txt: any) => regex.test(txt))
+  txts = filter(txts, (txt: any) => {
+    regex.lastIndex = 0
+    return regex.test(txt)
+  })
 
   return txts.join('\n\n')
 }

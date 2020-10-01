@@ -11,7 +11,7 @@ const cache: Record<string, string[]> = {}
 
 // Given a language, loads a list of stop words for that language
 // and then returns which of those words exist in the given content
-export default function stopwords(content: string, language: 'en' | 'es') {
+export default function stopwords(content: string, language?: 'en' | 'es') {
   if (language == null) {
     language = 'en'
   }

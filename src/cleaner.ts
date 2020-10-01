@@ -7,7 +7,6 @@
  * Full docs: https://github.com/decaffeinate/decaffeinate/blob/master/docs/suggestions.md
  */
 import each from 'lodash/each'
-import { csLegacyGuard } from './__guard__'
 
 export default function cleaner(doc: cheerio.Root) {
   removeBodyClasses(doc)
@@ -87,12 +86,12 @@ const cleanBadTags = function (doc: cheerio.Root) {
   const re = new RegExp(removeNodesRe, 'gi')
 
   const toRemove = doc('*').filter(function (_, e) {
-    return (
-      csLegacyGuard(doc(e).attr('id'), (x) => re.test(x)) ??
-      csLegacyGuard(doc(e).attr('class'), (x1) => re.test(x1)) ??
-      csLegacyGuard(doc(e).attr('name'), (x2) => re.test(x2)) ??
-      false
-    )
+    re.lastIndex = 0
+    const tCheerio = doc(e)
+    const toMatch = [tCheerio.attr('id'), tCheerio.attr('class'), tCheerio.attr('name')].filter(
+      (t) => t != null,
+    ) as string[]
+    return toMatch.some((t) => re.test(t))
   })
 
   return doc(toRemove).remove()
@@ -100,11 +99,10 @@ const cleanBadTags = function (doc: cheerio.Root) {
 
 const removeNodesRegex = function (doc: cheerio.Root, pattern: RegExp) {
   const toRemove = doc('div').filter(function (_, e) {
-    return (
-      csLegacyGuard(doc(e).attr('id'), (x) => pattern.test(x)) ??
-      csLegacyGuard(doc(e).attr('class'), (x1) => pattern.test(x1)) ??
-      false
-    )
+    pattern.lastIndex = 0
+    const tCheerio = doc(e)
+    const toMatch = [tCheerio.attr('id'), tCheerio.attr('class')].filter((t) => t != null) as string[]
+    return toMatch.some((t) => pattern.test(t))
   })
 
   return doc(toRemove).remove()
